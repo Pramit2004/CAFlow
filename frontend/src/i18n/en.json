@@ -1,0 +1,33 @@
+{
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "add": "Add",
+    "search": "Search",
+    "filter": "Filter",
+    "loading": "Loading...",
+    "noData": "No data found",
+    "error": "Something went wrong",
+    "required": "This field is required"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "clients": "Clients",
+    "cases": "Cases",
+    "documents": "Documents",
+    "fees": "Fees & Billing",
+    "calendar": "Compliance",
+    "team": "Team",
+    "settings": "Settings"
+  },
+  "portal": {
+    "greeting": "Hello, {{name}}",
+    "uploadTitle": "Upload your documents",
+    "uploadDesc": "{{caName}} has requested the following documents",
+    "uploadSuccess": "Thank you! Your documents have been submitted.",
+    "linkExpired": "This link has expired",
+    "contactCA": "Please contact your CA: {{phone}}"
+  }
+}
