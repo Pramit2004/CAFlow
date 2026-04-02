@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { ArrowRight, Sparkles, Shield, Zap, Users } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { ThemeToggle } from '@/components/theme/ThemeToggle'
+import { useAuthStore } from '@/store/auth.store'
 
 /* ── Floating blob for parallax bg ─────────────────────────────────────── */
 function ParallaxBlob({
@@ -82,12 +82,23 @@ function LogoFull() {
 
 export default function LoginPage() {
   const navigate = useNavigate()
+  const location = useLocation()
+  const { setAuth, isAuthenticated } = useAuthStore()
   const [step, setStep] = useState<'phone' | 'otp'>('phone')
   const [phone, setPhone] = useState('')
   const [otp, setOtp] = useState(['', '', '', '', '', ''])
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
   const heroRef = useRef<HTMLDivElement>(null)
+
+  // If already authenticated, go straight to the app
+  useEffect(() => {
+    if (isAuthenticated) {
+      const from = (location.state as any)?.from?.pathname ?? '/dashboard'
+      navigate(from, { replace: true })
+    }
+  }, [isAuthenticated])
 
   /* Parallax on mouse move */
   useEffect(() => {
@@ -103,8 +114,11 @@ export default function LoginPage() {
 
   const handlePhoneSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setError('')
+    if (phone.length !== 10) { setError('Enter a valid 10-digit number'); return }
     setLoading(true)
-    await new Promise((r) => setTimeout(r, 800))
+    // Simulate OTP send (replace with real API call when backend is connected)
+    await new Promise((r) => setTimeout(r, 700))
     setLoading(false)
     setStep('otp')
   }
@@ -115,8 +129,7 @@ export default function LoginPage() {
     newOtp[index] = value.slice(-1)
     setOtp(newOtp)
     if (value && index < 5) {
-      const next = document.getElementById(`otp-${index + 1}`)
-      next?.focus()
+      document.getElementById(`otp-${index + 1}`)?.focus()
     }
     if (newOtp.every((d) => d) && newOtp.join('').length === 6) {
       handleOtpVerify(newOtp.join(''))
@@ -129,11 +142,31 @@ export default function LoginPage() {
     }
   }
 
-  const handleOtpVerify = async (_code: string) => {
+  const handleOtpVerify = async (code: string) => {
+    setError('')
     setLoading(true)
-    await new Promise((r) => setTimeout(r, 1000))
+    // Simulate verification (replace with real Clerk/backend call)
+    await new Promise((r) => setTimeout(r, 900))
+
+    // ── DEMO MODE ──────────────────────────────────────────────────────────
+    // Accept any 6-digit OTP for now. When you wire up Clerk or your backend,
+    // replace this block with a real API call that returns a JWT + user object.
+    // ──────────────────────────────────────────────────────────────────────
+    setAuth(
+      {
+        id: 'demo-user-001',
+        clerkId: 'demo',
+        name: 'CA Rajesh Shah',
+        email: 'rajesh@example.com',
+        role: 'owner',
+        workspaceId: 'demo-workspace-001',
+      },
+      'demo-token',
+    )
     setLoading(false)
-    navigate('/dashboard')
+
+    const from = (location.state as any)?.from?.pathname ?? '/dashboard'
+    navigate(from, { replace: true })
   }
 
   return (
@@ -301,6 +334,12 @@ export default function LoginPage() {
                     />
                   </div>
                 </div>
+
+                {error && (
+                  <p className="rounded-lg bg-red-50 px-3 py-2 text-[12.5px] text-red-600 dark:bg-red-950/30 dark:text-red-400">
+                    {error}
+                  </p>
+                )}
 
                 <Button
                   type="submit"

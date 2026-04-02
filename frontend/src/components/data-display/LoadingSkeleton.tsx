@@ -2,29 +2,43 @@ import { cn } from '@/lib/utils'
 
 interface SkeletonProps {
   className?: string
+  style?: React.CSSProperties
 }
 
-export function Skeleton({ className }: SkeletonProps) {
+export function Skeleton({ className, style }: SkeletonProps) {
   return (
     <div
-      className={cn('animate-pulse rounded-md bg-muted', className)}
+      style={style}
+      className={cn('animate-pulse rounded-lg bg-[var(--border)]', className)}
     />
   )
 }
 
 export function LoadingSkeleton() {
   return (
-    <div className="space-y-4 p-6">
-      <Skeleton className="h-8 w-48" />
-      <div className="space-y-3">
-        <Skeleton className="h-4 w-full" />
-        <Skeleton className="h-4 w-4/5" />
-        <Skeleton className="h-4 w-3/5" />
+    <div className="flex h-full flex-col gap-5 p-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-2">
+          <Skeleton className="h-7 w-44" />
+          <Skeleton className="h-3.5 w-28" />
+        </div>
+        <Skeleton className="h-8 w-24" />
       </div>
-      <div className="grid grid-cols-3 gap-4">
-        <Skeleton className="h-24" />
-        <Skeleton className="h-24" />
-        <Skeleton className="h-24" />
+
+      {/* Stat cards */}
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <Skeleton key={i} className="h-20 rounded-xl" />
+        ))}
+      </div>
+
+      {/* Table rows */}
+      <div className="flex flex-1 flex-col gap-2">
+        <Skeleton className="h-10 rounded-xl" />
+        {Array.from({ length: 6 }).map((_, i) => (
+          <Skeleton key={i} className="h-14 rounded-xl" style={{ opacity: 1 - i * 0.12 }} />
+        ))}
       </div>
     </div>
   )
@@ -32,10 +46,10 @@ export function LoadingSkeleton() {
 
 export function TableSkeleton({ rows = 5 }: { rows?: number }) {
   return (
-    <div className="space-y-2">
-      <Skeleton className="h-10 w-full" />
+    <div className="flex flex-col gap-2">
+      <Skeleton className="h-10 rounded-xl" />
       {Array.from({ length: rows }).map((_, i) => (
-        <Skeleton key={i} className="h-14 w-full" />
+        <Skeleton key={i} className="h-14 rounded-xl" style={{ opacity: 1 - i * 0.15 }} />
       ))}
     </div>
   )

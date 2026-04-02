@@ -1,9 +1,7 @@
 import { QueryClientProvider } from '@tanstack/react-query'
-import { ClerkProvider } from '@clerk/clerk-react'
 import { Toaster } from 'sonner'
 import { queryClient } from '@/lib/queryClient'
-import { ThemeProvider } from '@/components/theme/ThemeProvider'
-import { useTheme } from '@/components/theme/ThemeProvider'
+import { ThemeProvider, useTheme } from '@/components/theme/ThemeProvider'
 
 const CLERK_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY
 
@@ -28,12 +26,10 @@ function ToasterWithTheme() {
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <ThemeProvider>
-      <ClerkProvider publishableKey={CLERK_KEY ?? ''}>
-        <QueryClientProvider client={queryClient}>
-          {children}
-          <ToasterWithTheme />
-        </QueryClientProvider>
-      </ClerkProvider>
+      <QueryClientProvider client={queryClient}>
+        {children}
+        <ToasterWithTheme />
+      </QueryClientProvider>
     </ThemeProvider>
   )
 }

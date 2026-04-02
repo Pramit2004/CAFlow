@@ -36,10 +36,9 @@ export function AppShell() {
         )}
       >
         <Header />
-        <main className="flex-1 overflow-y-auto">
-          <div className="mx-auto max-w-[1400px] p-5 md:p-6 lg:p-7">
-            <Outlet />
-          </div>
+        {/* Pages own their layout — flex h-full, their own scroll, their own padding */}
+        <main className="flex-1 overflow-hidden">
+          <Outlet />
         </main>
       </div>
     </div>

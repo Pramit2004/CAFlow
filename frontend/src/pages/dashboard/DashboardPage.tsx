@@ -48,7 +48,8 @@ export default function DashboardPage() {
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening'
 
   return (
-    <div className="space-y-6 stagger-children">
+    <div className="h-full overflow-y-auto">
+    <div className="space-y-6 stagger-children p-6">
       <PageHeader
         title={`${greeting}, CA Gopal 👋`}
         subtitle="Here's what needs your attention today."
@@ -198,6 +199,7 @@ export default function DashboardPage() {
           </div>
         </Card>
       </div>
+    </div>
     </div>
   )
 }
