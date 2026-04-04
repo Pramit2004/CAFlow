@@ -269,7 +269,7 @@ export default function LoginPage() {
       </div>
 
       {/* ─ Right auth panel ─────────────────────────────────────── */}
-      <div className="relative flex w-full flex-col items-center justify-center px-6 py-12 lg:w-[460px] lg:flex-shrink-0">
+      <div className="relative flex w-full flex-col items-center justify-center px-6 py-12 lg:w-[500px] lg:flex-shrink-0">
         {/* Subtle warm glow */}
         <div
           className="pointer-events-none absolute inset-0"
