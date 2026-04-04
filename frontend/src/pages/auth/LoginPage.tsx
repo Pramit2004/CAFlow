@@ -16,7 +16,7 @@ function StatCard({
     <div
       className={`absolute rounded-2xl px-4 py-3 animate-float ${className ?? ''}`}
       style={{
-        background: 'rgba(255,255,255,0.10)',
+        background: 'rgba(255,255,255,0.050)',
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
         border: '1px solid rgba(255,255,255,0.18)',
@@ -29,14 +29,14 @@ function StatCard({
           <Icon className="h-4 w-4" strokeWidth={2} />
         </div>
         <div>
-          <p className="text-[10px] font-[500] text-white/60">{label}</p>
+          <p className="text-[10px] font-[500] text-white">{label}</p>
           <p
             className="text-[15px] font-[800] text-white leading-tight"
             style={{ fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif' }}
           >
             {value}
           </p>
-          <p className="text-[10px] text-white/50">{sub}</p>
+          <p className="text-[10px] text-white">{sub}</p>
         </div>
       </div>
     </div>
@@ -209,17 +209,17 @@ export default function LoginPage() {
 
         {/* Dot grid */}
         <div
-          className="absolute inset-0 opacity-[0.07]"
+          className="absolute inset-0 opacity-[0.6]"
           style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.9) 1px, transparent 1px)', backgroundSize: '26px 26px' }}
         />
 
         {/* Floating cards */}
         <StatCard label="Active cases" value="124" sub="↑ 18 this month" icon={BarChart3}
-          color="bg-brand-600" className="top-[16%] left-[7%] w-[200px]" style={{ animationDuration: '5.5s' }} />
+          color="bg-brand-400" className="top-[16%] left-[7%] w-[200px]" style={{ animationDuration: '5.5s' }} />
         <StatCard label="Documents collected" value="2,840" sub="98.2% on time" icon={FileCheck}
-          color="bg-amber-500" className="bottom-[22%] right-[7%] w-[210px]" style={{ animationDuration: '6.5s', animationDelay: '1.2s' }} />
+          color="bg-brand-400" className="bottom-[22%] right-[7%] w-[210px]" style={{ animationDuration: '6.5s', animationDelay: '1.2s' }} />
         <StatCard label="Active clients" value="312" sub="Across 3 staff" icon={Users}
-          color="bg-orange-500" className="bottom-[16%] left-[7%] w-[196px]" style={{ animationDuration: '4.8s', animationDelay: '0.6s' }} />
+          color="bg-brand-400" className="bottom-[16%] left-[7%] w-[196px]" style={{ animationDuration: '4.8s', animationDelay: '0.6s' }} />
 
         {/* Hero copy */}
         <div
@@ -231,7 +231,7 @@ export default function LoginPage() {
             style={{ background: 'rgba(255,255,255,0.08)', backdropFilter: 'blur(8px)' }}
           >
             <Sparkles className="h-3.5 w-3.5" style={{ color: '#FBBF24' }} />
-            <span className="text-[11.5px] font-[600] text-white/85">India's #1 CA Practice Tool</span>
+            <span className="text-[11.5px]  text-white">India's #1 CA Practice Tool</span>
           </div>
 
           <h2
@@ -239,11 +239,11 @@ export default function LoginPage() {
             style={{ fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif' }}
           >
             Replace the<br />
-            <span style={{ color: '#FBBF24' }}>WhatsApp chaos</span><br />
+            <span style={{ color: '#0df700ba' }}>WhatsApp chaos</span><br />
             forever.
           </h2>
 
-          <p className="text-[14.5px] leading-relaxed" style={{ color: 'rgba(255,255,255,0.60)' }}>
+          <p className="text-[14.5px] leading-relaxed" style={{ color: 'rgba(255, 255, 255, 255)' }}>
             Structured document collection, case tracking and client management — built for Indian CAs.
           </p>
 
@@ -251,7 +251,7 @@ export default function LoginPage() {
             className="mt-8 rounded-2xl p-4 text-left"
             style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)', backdropFilter: 'blur(12px)' }}
           >
-            <p className="text-[13px] italic leading-relaxed" style={{ color: 'rgba(255,255,255,0.78)' }}>
+            <p className="text-[13px] italic leading-relaxed" style={{ color: 'white' }}>
               "CAFlow cut my document follow-up time by 70%. My clients love the upload portal."
             </p>
             <div className="mt-3 flex items-center gap-2.5">
@@ -260,8 +260,8 @@ export default function LoginPage() {
                 style={{ background: 'linear-gradient(135deg,#C84B0F,#F97316)' }}
               >RS</div>
               <div>
-                <p className="text-[11.5px] font-[600] text-white/90">Rajesh Shah, CA</p>
-                <p className="text-[10.5px]" style={{ color: 'rgba(255,255,255,0.45)' }}>Surat, Gujarat · 280 clients</p>
+                <p className="text-[11.5px] font-[600] text-white">Rajesh Shah, CA</p>
+                <p className="text-[10.5px]" style={{ color: 'white' }}>Surat, Gujarat · 280 clients</p>
               </div>
             </div>
           </div>
