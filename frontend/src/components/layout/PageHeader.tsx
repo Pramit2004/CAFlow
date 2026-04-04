@@ -13,7 +13,7 @@ export function PageHeader({ title, subtitle, actions, className, eyebrow }: Pag
     <div className={cn('mb-6 flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between', className)}>
       <div>
         {eyebrow && (
-          <p className="mb-1 text-[10px] font-[600] uppercase tracking-[0.12em] text-brand-600 dark:text-brand-400">
+          <p className="mb-1 text-[10px] font-[600] uppercase tracking-[0.12em] text-brand-600">
             {eyebrow}
           </p>
         )}

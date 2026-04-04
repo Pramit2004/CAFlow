@@ -40,7 +40,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
               rightIcon ? 'pr-9' : 'pr-3',
               error
                 ? 'border-red-400 focus:border-red-500 focus:shadow-[0_0_0_3px_rgba(220,38,38,0.1)]'
-                : 'border-[var(--border)] focus:border-brand-400 focus:shadow-[0_0_0_3px_rgba(18,110,71,0.1)] hover:border-[var(--border-strong)]',
+                : 'border-[var(--border)] focus:border-brand-400 focus:shadow-[0_0_0_3px_rgba(200,75,15,0.12)] hover:border-[var(--border-strong)]',
               className,
             )}
             {...props}
@@ -85,7 +85,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
             'bg-[var(--surface)] text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)]',
             error
               ? 'border-red-400 focus:border-red-500'
-              : 'border-[var(--border)] focus:border-brand-400 focus:shadow-[0_0_0_3px_rgba(18,110,71,0.1)]',
+              : 'border-[var(--border)] focus:border-brand-400 focus:shadow-[0_0_0_3px_rgba(200,75,15,0.12)]',
             className,
           )}
           {...props}

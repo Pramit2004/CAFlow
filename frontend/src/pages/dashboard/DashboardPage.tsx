@@ -2,22 +2,18 @@ import { useState } from 'react'
 import {
   Users, FolderOpen, FileText, AlertTriangle,
   Clock, CheckCircle2, ArrowRight, Calendar,
-  TrendingUp, Plus, ChevronRight,
+  TrendingUp, Plus, ChevronRight, BarChart3, IndianRupee,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { PageHeader } from '@/components/layout/PageHeader'
-import { StatCard } from '@/components/data-display/StatCard'
-import { Card, CardTitle } from '@/components/ui/card'
-import { Badge, CaseStatusBadge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Avatar } from '@/components/ui/avatar'
+import { useAuthStore } from '@/store/auth.store'
 import { formatCurrency } from '@/lib/utils'
 
+// ─── Static mock data (will be replaced by real API calls) ─────────────────
 const STATS = [
-  { title: 'Active Clients', value: '142', subtitle: '12 added this month', icon: Users, variant: 'default' as const, trend: { value: 8, label: 'vs last month' } },
-  { title: 'Active Cases', value: '38', subtitle: '6 due this week', icon: FolderOpen, variant: 'brand' as const, trend: { value: 5, label: 'vs last month' } },
-  { title: 'Docs Pending', value: '24', subtitle: 'From 16 clients', icon: FileText, variant: 'warning' as const, trend: { value: -12, label: 'vs last week' } },
-  { title: 'Overdue Cases', value: '3', subtitle: 'Need immediate action', icon: AlertTriangle, variant: 'danger' as const, trend: { value: -2, label: 'vs last week' } },
+  { title: 'Active Clients', value: '142', sub: '12 added this month', icon: Users, trend: '+8%', trendUp: true, color: '#0EA5E9', bg: '#E0F2FE' },
+  { title: 'Active Cases', value: '38', sub: '6 due this week', icon: FolderOpen, trend: '+5', trendUp: true, color: '#C84B0F', bg: '#FFF4EE' },
+  { title: 'Docs Pending', value: '24', sub: 'From 16 clients', icon: FileText, trend: '−12 vs last wk', trendUp: true, color: '#D97706', bg: '#FEF3C7' },
+  { title: 'Overdue Cases', value: '3', sub: 'Need action now', icon: AlertTriangle, trend: '−2 this week', trendUp: true, color: '#DC2626', bg: '#FEE2E2' },
 ]
 
 const DEADLINES = [
@@ -29,11 +25,11 @@ const DEADLINES = [
 ]
 
 const ACTIVITY = [
-  { icon: '📄', client: 'Amit Patel', action: 'uploaded Form 16', time: '5 min ago' },
-  { icon: '🔄', client: 'Priya Shah', action: 'case moved to preparation', time: '1 hr ago' },
-  { icon: '💳', client: 'Ravi Kumar', action: 'paid invoice ₹8,000', time: '2 hr ago' },
-  { icon: '📁', client: 'Meena Desai', action: 'uploaded 3 documents', time: '3 hr ago' },
-  { icon: '✅', client: 'Neha Sharma', action: 'case marked complete', time: 'Yesterday' },
+  { emoji: '📄', client: 'Amit Patel', action: 'uploaded Form 16', time: '5 min ago' },
+  { emoji: '🔄', client: 'Priya Shah', action: 'case moved to preparation', time: '1 hr ago' },
+  { emoji: '💳', client: 'Ravi Kumar', action: 'paid invoice ₹8,000', time: '2 hr ago' },
+  { emoji: '📁', client: 'Meena Desai', action: 'uploaded 3 documents', time: '3 hr ago' },
+  { emoji: '✅', client: 'Neha Sharma', action: 'case marked complete', time: 'Yesterday' },
 ]
 
 const TASKS = [
@@ -43,192 +39,385 @@ const TASKS = [
   { title: 'Review audit report — Sunrise Traders', case: 'Audit FY24', due: 'In 5 days', priority: 'medium' as const },
 ]
 
-export default function DashboardPage() {
-  const hour = new Date().getHours()
-  const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening'
+const STATUS_LABELS: Record<string, { label: string; color: string; bg: string }> = {
+  DOCUMENTS_PENDING: { label: 'Docs Pending', color: '#D97706', bg: '#FEF3C7' },
+  DOCS_RECEIVED:     { label: 'Docs Received', color: '#0EA5E9', bg: '#E0F2FE' },
+  UNDER_PREPARATION: { label: 'In Preparation', color: '#C84B0F', bg: '#FFF4EE' },
+  FILED:             { label: 'Filed', color: '#16A34A', bg: '#DCFCE7' },
+  COMPLETE:          { label: 'Complete', color: '#16A34A', bg: '#DCFCE7' },
+}
 
+const PRIORITY_COLORS = {
+  high:   { dot: '#DC2626', bg: '#FEE2E2', label: 'High' },
+  medium: { dot: '#D97706', bg: '#FEF3C7', label: 'Medium' },
+  low:    { dot: '#0EA5E9', bg: '#E0F2FE', label: 'Low' },
+}
+
+// ─── Components ────────────────────────────────────────────────────────────
+
+function Avatar({ name, size = 'md' }: { name: string; size?: 'sm' | 'md' }) {
+  const initials = name.split(' ').map((p) => p[0]).join('').slice(0, 2).toUpperCase()
+  const colors = ['#C84B0F', '#D97706', '#0EA5E9', '#7C3AED', '#059669']
+  const color = colors[name.charCodeAt(0) % colors.length]
   return (
-    <div className="h-full overflow-y-auto">
-    <div className="space-y-6 stagger-children p-6">
-      <PageHeader
-        title={`${greeting}, CA Gopal 👋`}
-        subtitle="Here's what needs your attention today."
-        actions={
-          <Button size="md" leftIcon={<Plus className="h-3.5 w-3.5" />}>
-            New Case
-          </Button>
-        }
-      />
-
-      {/* Stats */}
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        {STATS.map((stat) => <StatCard key={stat.title} {...stat} />)}
-      </div>
-
-      {/* Main grid */}
-      <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
-        {/* Deadlines */}
-        <div className="lg:col-span-2">
-          <Card padding="none" className="overflow-hidden">
-            <div className="flex items-center justify-between border-b border-[var(--border)] px-5 py-3.5">
-              <div className="flex items-center gap-2">
-                <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-brand-50 dark:bg-brand-950/50">
-                  <Calendar className="h-3.5 w-3.5 text-brand-600 dark:text-brand-400" strokeWidth={1.8} />
-                </div>
-                <CardTitle>Upcoming Deadlines</CardTitle>
-              </div>
-              <Button variant="ghost" size="sm" rightIcon={<ArrowRight className="h-3 w-3" />}>View all</Button>
-            </div>
-            <div className="divide-y divide-[var(--border)]">
-              {DEADLINES.map((item, i) => {
-                const urgency = item.daysLeft <= 3 ? 'text-red-500 dark:text-red-400' : item.daysLeft <= 7 ? 'text-amber-600 dark:text-amber-400' : 'text-[var(--text-tertiary)]'
-                return (
-                  <div key={i} className="flex items-center gap-3 px-5 py-3 hover:bg-[var(--bg-subtle)] transition-colors duration-100 cursor-pointer">
-                    <Avatar name={item.name} size="sm" />
-                    <div className="min-w-0 flex-1">
-                      <p className="text-[13px] font-[500] text-[var(--text-primary)] truncate">{item.name}</p>
-                      <p className="text-[11px] text-[var(--text-tertiary)] truncate">{item.service}</p>
-                    </div>
-                    <CaseStatusBadge status={item.status} size="xs" />
-                    <p className={cn('flex-shrink-0 text-[12px] font-[600]', urgency)}>
-                      {item.daysLeft <= 0 ? 'Overdue' : `${item.daysLeft}d`}
-                    </p>
-                  </div>
-                )
-              })}
-            </div>
-          </Card>
-        </div>
-
-        {/* Activity feed */}
-        <div>
-          <Card padding="none" className="overflow-hidden">
-            <div className="flex items-center justify-between border-b border-[var(--border)] px-5 py-3.5">
-              <div className="flex items-center gap-2">
-                <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-amber-50 dark:bg-amber-950/40">
-                  <Clock className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" strokeWidth={1.8} />
-                </div>
-                <CardTitle>Recent Activity</CardTitle>
-              </div>
-            </div>
-            <div className="divide-y divide-[var(--border)]">
-              {ACTIVITY.map((item, i) => (
-                <div key={i} className="flex items-start gap-3 px-5 py-3 hover:bg-[var(--bg-subtle)] transition-colors duration-100">
-                  <span className="mt-0.5 flex-shrink-0 text-sm leading-none">{item.icon}</span>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-[12.5px] text-[var(--text-primary)] leading-snug">
-                      <span className="font-[500]">{item.client}</span>
-                      {' '}{item.action}
-                    </p>
-                    <p className="mt-0.5 text-[10.5px] text-[var(--text-tertiary)]">{item.time}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </Card>
-        </div>
-      </div>
-
-      {/* Bottom grid */}
-      <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
-        {/* Tasks */}
-        <Card padding="none" className="overflow-hidden">
-          <div className="flex items-center justify-between border-b border-[var(--border)] px-5 py-3.5">
-            <div className="flex items-center gap-2">
-              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-purple-50 dark:bg-purple-950/40">
-                <CheckCircle2 className="h-3.5 w-3.5 text-purple-600 dark:text-purple-400" strokeWidth={1.8} />
-              </div>
-              <CardTitle>My Tasks Today</CardTitle>
-              <Badge variant="brand" size="xs">{TASKS.length}</Badge>
-            </div>
-            <Button variant="ghost" size="sm" rightIcon={<ArrowRight className="h-3 w-3" />}>All tasks</Button>
-          </div>
-          <div className="divide-y divide-[var(--border)]">
-            {TASKS.map((task, i) => <TaskRow key={i} task={task} />)}
-          </div>
-        </Card>
-
-        {/* Revenue */}
-        <Card padding="none" className="overflow-hidden">
-          <div className="flex items-center justify-between border-b border-[var(--border)] px-5 py-3.5">
-            <div className="flex items-center gap-2">
-              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-green-50 dark:bg-green-950/40">
-                <TrendingUp className="h-3.5 w-3.5 text-green-600 dark:text-green-400" strokeWidth={1.8} />
-              </div>
-              <CardTitle>Fees This Month</CardTitle>
-            </div>
-            <Badge variant="success" dot size="sm">April 2025</Badge>
-          </div>
-          <div className="space-y-4 p-5">
-            <div>
-              <p className="mb-1 text-[11.5px] font-[500] text-[var(--text-tertiary)]">Total Billed</p>
-              <p className="text-[30px] font-[800] tracking-tight text-[var(--text-primary)]"
-                style={{ fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif' }}>
-                {formatCurrency(186000)}
-              </p>
-              <p className="mt-0.5 text-[12px] font-[500] text-green-600 dark:text-green-400">↑ 24% vs last month</p>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="rounded-lg border border-[var(--border)] bg-[var(--bg-subtle)] p-3">
-                <p className="text-[10.5px] font-[500] text-[var(--text-tertiary)] mb-1">Received</p>
-                <p className="text-[16px] font-[700] text-green-600 dark:text-green-400"
-                  style={{ fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif' }}>
-                  {formatCurrency(142000)}
-                </p>
-              </div>
-              <div className="rounded-lg border border-[var(--border)] bg-[var(--bg-subtle)] p-3">
-                <p className="text-[10.5px] font-[500] text-[var(--text-tertiary)] mb-1">Outstanding</p>
-                <p className="text-[16px] font-[700] text-amber-600 dark:text-amber-400"
-                  style={{ fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif' }}>
-                  {formatCurrency(44000)}
-                </p>
-              </div>
-            </div>
-            <div>
-              <div className="mb-1.5 flex justify-between text-[10.5px] text-[var(--text-tertiary)]">
-                <span>Collection rate</span>
-                <span className="font-[600] text-[var(--text-primary)]">76%</span>
-              </div>
-              <div className="h-2 w-full overflow-hidden rounded-full bg-[var(--bg-subtle)]">
-                <div className="h-full w-[76%] rounded-full bg-gradient-to-r from-brand-500 to-brand-400 transition-all duration-700" />
-              </div>
-            </div>
-            <Button variant="outline" size="sm" className="w-full" rightIcon={<ChevronRight className="h-3.5 w-3.5" />}>
-              View full report
-            </Button>
-          </div>
-        </Card>
-      </div>
-    </div>
+    <div
+      className={cn(
+        'flex flex-shrink-0 items-center justify-center rounded-full font-[700] text-white',
+        size === 'sm' ? 'h-7 w-7 text-[10px]' : 'h-8 w-8 text-[11px]',
+      )}
+      style={{ background: color, fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif' }}
+    >
+      {initials}
     </div>
   )
 }
 
-function TaskRow({ task }: { task: { title: string; case: string; due: string; priority: 'high' | 'medium' | 'low' } }) {
-  const [done, setDone] = useState(false)
-  const dot = task.priority === 'high' ? 'bg-red-500' : task.priority === 'medium' ? 'bg-amber-500' : 'bg-[var(--border-strong)]'
-
+function StatCard({ stat }: { stat: typeof STATS[0] }) {
+  const Icon = stat.icon
   return (
     <div
-      className={cn('flex cursor-pointer items-start gap-3 px-5 py-3 transition-colors duration-100 hover:bg-[var(--bg-subtle)]', done && 'opacity-50')}
-      onClick={() => setDone(!done)}
+      className="relative overflow-hidden rounded-2xl border bg-white p-5 transition-all duration-250 group cursor-pointer"
+      style={{ borderColor: '#EDE8E1', boxShadow: '0 1px 4px rgba(26,21,18,0.06), 0 4px 12px -2px rgba(26,21,18,0.05)' }}
+      onMouseEnter={(e) => { e.currentTarget.style.boxShadow = '0 4px 16px -2px rgba(26,21,18,0.12), 0 8px 24px -4px rgba(26,21,18,0.08)'; e.currentTarget.style.transform = 'translateY(-2px)' }}
+      onMouseLeave={(e) => { e.currentTarget.style.boxShadow = '0 1px 4px rgba(26,21,18,0.06), 0 4px 12px -2px rgba(26,21,18,0.05)'; e.currentTarget.style.transform = 'translateY(0)' }}
     >
-      <div className={cn('mt-0.5 flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full border-2 transition-all duration-150',
-        done ? 'border-brand-500 bg-brand-500' : 'border-[var(--border-strong)]')}>
-        {done && <CheckCircle2 className="h-2.5 w-2.5 text-white" strokeWidth={3} />}
-      </div>
-      <div className="min-w-0 flex-1">
-        <p className={cn('text-[12.5px] font-[500] leading-snug text-[var(--text-primary)]', done && 'line-through text-[var(--text-tertiary)]')}>
-          {task.title}
-        </p>
-        <div className="mt-1 flex items-center gap-2">
-          <span className="text-[10.5px] text-[var(--text-tertiary)]">{task.case}</span>
-          <span className="h-1 w-1 rounded-full bg-[var(--border-strong)]" />
-          <span className={cn('flex items-center gap-1 text-[10.5px] font-[500]', task.due === 'Today' ? 'text-red-500' : 'text-[var(--text-tertiary)]')}>
-            <span className={cn('h-1.5 w-1.5 rounded-full', dot)} />
-            {task.due}
-          </span>
+      {/* Left accent bar */}
+      <div
+        className="absolute left-0 top-0 h-full w-[3px] rounded-r-full"
+        style={{ background: stat.color }}
+      />
+
+      <div className="flex items-start justify-between">
+        <div
+          className="flex h-10 w-10 items-center justify-center rounded-xl"
+          style={{ background: stat.bg }}
+        >
+          <Icon className="h-5 w-5" style={{ color: stat.color }} strokeWidth={2} />
         </div>
+        <span
+          className="rounded-full px-2 py-0.5 text-[10.5px] font-[600]"
+          style={{ background: stat.bg, color: stat.color }}
+        >
+          {stat.trend}
+        </span>
+      </div>
+
+      <div className="mt-3">
+        <p
+          className="text-[32px] font-[800] leading-none tracking-tight text-[#1A1512]"
+          style={{ fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif' }}
+        >
+          {stat.value}
+        </p>
+        <p className="mt-1.5 text-[12px] font-[500] text-[#1A1512]">{stat.title}</p>
+        <p className="mt-0.5 text-[11px]" style={{ color: '#A09890' }}>{stat.sub}</p>
+      </div>
+    </div>
+  )
+}
+
+function SectionCard({ title, icon: Icon, iconBg, iconColor, action, children }: {
+  title: string; icon: React.ElementType; iconBg: string; iconColor: string
+  action?: React.ReactNode; children: React.ReactNode
+}) {
+  return (
+    <div
+      className="overflow-hidden rounded-2xl border bg-white"
+      style={{ borderColor: '#EDE8E1', boxShadow: '0 1px 4px rgba(26,21,18,0.06), 0 4px 12px -2px rgba(26,21,18,0.05)' }}
+    >
+      <div
+        className="flex items-center justify-between px-5 py-4"
+        style={{ borderBottom: '1px solid #EDE8E1' }}
+      >
+        <div className="flex items-center gap-2.5">
+          <div
+            className="flex h-8 w-8 items-center justify-center rounded-xl"
+            style={{ background: iconBg }}
+          >
+            <Icon className="h-[15px] w-[15px]" style={{ color: iconColor }} strokeWidth={2} />
+          </div>
+          <h3
+            className="text-[14px] font-[700] text-[#1A1512]"
+            style={{ fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif' }}
+          >
+            {title}
+          </h3>
+        </div>
+        {action}
+      </div>
+      {children}
+    </div>
+  )
+}
+
+function ViewAllBtn({ href }: { href?: string }) {
+  return (
+    <button
+      className="flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-[12px] font-[600] transition-all duration-150"
+      style={{ color: '#C84B0F' }}
+      onMouseEnter={(e) => { e.currentTarget.style.background = '#FFF4EE' }}
+      onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent' }}
+    >
+      View all <ArrowRight className="h-3 w-3" />
+    </button>
+  )
+}
+
+// ─── Page ──────────────────────────────────────────────────────────────────
+
+export default function DashboardPage() {
+  const user = useAuthStore((s) => s.user)
+  const hour = new Date().getHours()
+  const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening'
+  const name = user?.name?.split(' ')[0] ?? 'CA'
+
+  return (
+    <div className="h-full overflow-y-auto" style={{ background: '#F9F7F4' }}>
+      <div className="mx-auto max-w-[1400px] p-5 md:p-6 space-y-6 stagger-children">
+
+        {/* ── Page header ────────────────────────────────────────── */}
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1
+              className="text-[24px] font-[800] tracking-tight text-[#1A1512]"
+              style={{ fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif' }}
+            >
+              {greeting}, {name} 👋
+            </h1>
+            <p className="mt-0.5 text-[13.5px]" style={{ color: '#6B6258' }}>
+              Here's what needs your attention today.
+            </p>
+          </div>
+          <button
+            className="inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-[13.5px] font-[700] text-white transition-all duration-150 self-start sm:self-auto"
+            style={{ background: '#C84B0F', boxShadow: '0 4px 14px rgba(200,75,15,0.28)', fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif' }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = '#A33A0C' }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = '#C84B0F' }}
+          >
+            <Plus className="h-4 w-4" strokeWidth={2.5} />
+            New Case
+          </button>
+        </div>
+
+        {/* ── Stat grid ──────────────────────────────────────────── */}
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+          {STATS.map((s) => <StatCard key={s.title} stat={s} />)}
+        </div>
+
+        {/* ── Middle row ─────────────────────────────────────────── */}
+        <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
+
+          {/* Upcoming deadlines */}
+          <div className="lg:col-span-2">
+            <SectionCard
+              title="Upcoming Deadlines"
+              icon={Calendar}
+              iconBg="#FFF4EE"
+              iconColor="#C84B0F"
+              action={<ViewAllBtn />}
+            >
+              <div>
+                {DEADLINES.map((item, i) => {
+                  const urgency = item.daysLeft <= 3
+                    ? { color: '#DC2626', bg: '#FEE2E2' }
+                    : item.daysLeft <= 7
+                    ? { color: '#D97706', bg: '#FEF3C7' }
+                    : { color: '#A09890', bg: 'transparent' }
+                  const status = STATUS_LABELS[item.status]
+                  return (
+                    <div
+                      key={i}
+                      className="flex items-center gap-3 px-5 py-3 transition-colors duration-100 cursor-pointer"
+                      style={{ borderBottom: i < DEADLINES.length - 1 ? '1px solid #F5F2EE' : 'none' }}
+                      onMouseEnter={(e) => { e.currentTarget.style.background = '#FAFAF8' }}
+                      onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent' }}
+                    >
+                      <Avatar name={item.name} size="sm" />
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[13px] font-[600] text-[#1A1512] truncate">{item.name}</p>
+                        <p className="text-[11px] truncate" style={{ color: '#A09890' }}>{item.service}</p>
+                      </div>
+                      <span
+                        className="flex-shrink-0 rounded-full px-2 py-0.5 text-[10.5px] font-[600]"
+                        style={{ background: status.bg, color: status.color }}
+                      >
+                        {status.label}
+                      </span>
+                      <div
+                        className="flex-shrink-0 rounded-lg px-2 py-1 text-[11px] font-[700] min-w-[40px] text-center"
+                        style={{ background: urgency.bg, color: urgency.color }}
+                      >
+                        {item.daysLeft <= 0 ? 'Late' : `${item.daysLeft}d`}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </SectionCard>
+          </div>
+
+          {/* Activity feed */}
+          <SectionCard
+            title="Recent Activity"
+            icon={Clock}
+            iconBg="#F5F2EE"
+            iconColor="#7A7068"
+          >
+            <div>
+              {ACTIVITY.map((item, i) => (
+                <div
+                  key={i}
+                  className="flex items-start gap-3 px-5 py-3 transition-colors duration-100"
+                  style={{ borderBottom: i < ACTIVITY.length - 1 ? '1px solid #F5F2EE' : 'none' }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = '#FAFAF8' }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent' }}
+                >
+                  <span className="mt-0.5 flex-shrink-0 text-[14px] leading-none">{item.emoji}</span>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[12.5px] leading-snug text-[#1A1512]">
+                      <span className="font-[600]">{item.client}</span>
+                      {' '}{item.action}
+                    </p>
+                    <p className="mt-0.5 text-[10.5px]" style={{ color: '#A09890' }}>{item.time}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </SectionCard>
+        </div>
+
+        {/* ── Bottom row ─────────────────────────────────────────── */}
+        <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+
+          {/* Tasks */}
+          <SectionCard
+            title="My Tasks Today"
+            icon={CheckCircle2}
+            iconBg="#F5F2EE"
+            iconColor="#5E5650"
+            action={
+              <div className="flex items-center gap-2">
+                <span
+                  className="flex h-5 min-w-[20px] items-center justify-center rounded-full px-1.5 text-[10px] font-[700]"
+                  style={{ background: '#FFF4EE', color: '#C84B0F' }}
+                >
+                  {TASKS.length}
+                </span>
+                <ViewAllBtn />
+              </div>
+            }
+          >
+            <div>
+              {TASKS.map((task, i) => {
+                const p = PRIORITY_COLORS[task.priority]
+                return (
+                  <div
+                    key={i}
+                    className="flex items-start gap-3 px-5 py-3.5 transition-colors duration-100 cursor-pointer"
+                    style={{ borderBottom: i < TASKS.length - 1 ? '1px solid #F5F2EE' : 'none' }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = '#FAFAF8' }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent' }}
+                  >
+                    <div
+                      className="mt-1 h-2 w-2 flex-shrink-0 rounded-full"
+                      style={{ background: p.dot }}
+                    />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[13px] font-[500] text-[#1A1512] leading-snug">{task.title}</p>
+                      <div className="mt-1.5 flex items-center gap-2">
+                        <span
+                          className="rounded-full px-2 py-0.5 text-[10px] font-[600]"
+                          style={{ background: '#F5F2EE', color: '#6B6258' }}
+                        >
+                          {task.case}
+                        </span>
+                        <span className="text-[10.5px]" style={{ color: '#A09890' }}>{task.due}</span>
+                      </div>
+                    </div>
+                    <input type="checkbox" className="mt-1 h-4 w-4 flex-shrink-0 rounded accent-brand-600 cursor-pointer" />
+                  </div>
+                )
+              })}
+            </div>
+          </SectionCard>
+
+          {/* Fees */}
+          <SectionCard
+            title="Fees This Month"
+            icon={IndianRupee}
+            iconBg="#FFF4EE"
+            iconColor="#C84B0F"
+            action={
+              <span
+                className="flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-[600]"
+                style={{ background: '#DCFCE7', color: '#16A34A' }}
+              >
+                <span className="h-1.5 w-1.5 rounded-full bg-[#16A34A] animate-pulse-soft" />
+                April 2025
+              </span>
+            }
+          >
+            <div className="p-5 space-y-4">
+              <div>
+                <p className="text-[11.5px] font-[500] mb-1" style={{ color: '#A09890' }}>Total Billed</p>
+                <p
+                  className="text-[32px] font-[800] leading-none tracking-tight text-[#1A1512]"
+                  style={{ fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif' }}
+                >
+                  {formatCurrency(186000)}
+                </p>
+                <p className="mt-1 text-[12px] font-[600]" style={{ color: '#16A34A' }}>↑ 24% vs last month</p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="rounded-xl p-3.5" style={{ background: '#F9F7F4', border: '1px solid #EDE8E1' }}>
+                  <p className="text-[10.5px] font-[500] mb-1" style={{ color: '#A09890' }}>Received</p>
+                  <p
+                    className="text-[17px] font-[800]"
+                    style={{ color: '#16A34A', fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif' }}
+                  >
+                    {formatCurrency(142000)}
+                  </p>
+                </div>
+                <div className="rounded-xl p-3.5" style={{ background: '#F9F7F4', border: '1px solid #EDE8E1' }}>
+                  <p className="text-[10.5px] font-[500] mb-1" style={{ color: '#A09890' }}>Outstanding</p>
+                  <p
+                    className="text-[17px] font-[800]"
+                    style={{ color: '#D97706', fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif' }}
+                  >
+                    {formatCurrency(44000)}
+                  </p>
+                </div>
+              </div>
+
+              {/* Progress bar */}
+              <div>
+                <div className="mb-1.5 flex justify-between">
+                  <span className="text-[11px]" style={{ color: '#A09890' }}>Collection rate</span>
+                  <span className="text-[11px] font-[700]" style={{ color: '#1A1512' }}>76%</span>
+                </div>
+                <div className="h-2 w-full overflow-hidden rounded-full" style={{ background: '#F5F2EE' }}>
+                  <div
+                    className="h-full rounded-full transition-all duration-700"
+                    style={{ width: '76%', background: 'linear-gradient(90deg, #C84B0F 0%, #F97316 100%)' }}
+                  />
+                </div>
+              </div>
+
+              <button
+                className="flex w-full items-center justify-center gap-2 rounded-xl border py-2.5 text-[13px] font-[600] transition-all duration-150"
+                style={{ borderColor: '#EDE8E1', color: '#1A1512' }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = '#F5F2EE' }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent' }}
+              >
+                View full report <ChevronRight className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          </SectionCard>
+        </div>
+
+        {/* bottom spacer for mobile nav bar */}
+        <div className="h-4 lg:hidden" />
       </div>
     </div>
   )

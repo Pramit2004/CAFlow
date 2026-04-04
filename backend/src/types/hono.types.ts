@@ -1,10 +1,9 @@
-import type { User, Workspace } from '../db/schema/index.js'
-
 export type UserRole = 'owner' | 'manager' | 'staff'
 
 export type AppVariables = {
-  user: User & { workspace?: Workspace }
+  userId: string
   workspaceId: string
+  role: UserRole
 }
 
 // Extend Hono's context type

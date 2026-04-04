@@ -6,9 +6,9 @@ export const userRoleEnum = pgEnum('user_role', ['owner', 'manager', 'staff'])
 export const users = pgTable('users', {
   id: uuid('id').primaryKey().defaultRandom(),
   workspaceId: uuid('workspace_id').notNull().references(() => workspaces.id, { onDelete: 'cascade' }),
-  clerkId: varchar('clerk_id', { length: 255 }).notNull().unique(),
+  clerkId: varchar('clerk_id', { length: 255 }).unique(),
   name: varchar('name', { length: 255 }).notNull(),
-  email: varchar('email', { length: 255 }),
+  email: varchar('email', { length: 255 }).unique(),
   phone: varchar('phone', { length: 15 }),
   role: userRoleEnum('role').notNull().default('staff'),
   isActive: boolean('is_active').notNull().default(true),

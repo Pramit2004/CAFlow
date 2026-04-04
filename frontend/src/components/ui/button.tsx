@@ -16,7 +16,6 @@ const buttonVariants = cva(
         primary: [
           'bg-brand-600 text-white border border-brand-700/30',
           'hover:bg-brand-700 hover:shadow-brand',
-          'dark:bg-brand-500 dark:hover:bg-brand-600',
           'shadow-[inset_0_1px_0_rgba(255,255,255,0.15)]',
         ].join(' '),
         secondary: [
@@ -36,7 +35,6 @@ const buttonVariants = cva(
         outline: [
           'bg-transparent text-brand-700 border border-brand-300',
           'hover:bg-brand-50 hover:border-brand-400',
-          'dark:text-brand-400 dark:border-brand-700 dark:hover:bg-brand-950/40',
         ].join(' '),
         amber: [
           'bg-amber-500 text-white border border-amber-600/30',

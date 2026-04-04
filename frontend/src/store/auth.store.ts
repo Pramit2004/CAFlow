@@ -1,9 +1,8 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
-interface AuthUser {
+export interface AuthUser {
   id: string
-  clerkId: string
   name: string
   email?: string
   role: 'owner' | 'manager' | 'staff'
@@ -24,12 +23,12 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       token: null,
       isAuthenticated: false,
-      setAuth: (user, token) => set({ user, token, isAuthenticated: true }),
+      setAuth: (user, token) => set({ user, token, isAuthenticated: !!(user?.id && user.id !== 'pending') }),
       clearAuth: () => set({ user: null, token: null, isAuthenticated: false }),
     }),
     {
       name: 'caflow-auth',
-      partialize: (state) => ({ user: state.user, token: state.token }),
+      partialize: (state) => ({ user: state.user, token: state.token, isAuthenticated: state.isAuthenticated }),
     },
   ),
 )

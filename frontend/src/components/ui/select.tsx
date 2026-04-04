@@ -65,7 +65,7 @@ export const Select = forwardRef<HTMLDivElement, SelectProps>(
               error
                 ? 'border-red-400 focus:border-red-500'
                 : open
-                  ? 'border-brand-400 shadow-[0_0_0_3px_rgba(18,110,71,0.1)]'
+                  ? 'border-brand-400 shadow-[0_0_0_3px_rgba(200,75,15,0.12)]'
                   : 'border-[var(--border)] hover:border-[var(--border-strong)]',
             )}
           >
@@ -98,7 +98,7 @@ export const Select = forwardRef<HTMLDivElement, SelectProps>(
                     'flex w-full items-center justify-between px-3 py-2 text-[13px] transition-colors duration-75',
                     'hover:bg-[var(--bg-subtle)]',
                     value === opt.value
-                      ? 'bg-brand-50 text-brand-700 dark:bg-brand-950/50 dark:text-brand-300'
+                      ? 'bg-brand-50 text-brand-700 '
                       : 'text-[var(--text-primary)]',
                   )}
                 >
@@ -158,10 +158,10 @@ export function TagInput({ value, onChange, label, placeholder = 'Add tag...', e
       <div className={cn(
         'min-h-[32px] w-full flex-wrap flex items-center gap-1.5 rounded-lg border px-2 py-1 transition-all duration-150',
         'bg-[var(--surface)]',
-        error ? 'border-red-400' : 'border-[var(--border)] focus-within:border-brand-400 focus-within:shadow-[0_0_0_3px_rgba(18,110,71,0.1)]',
+        error ? 'border-red-400' : 'border-[var(--border)] focus-within:border-brand-400 focus-within:shadow-[0_0_0_3px_rgba(200,75,15,0.12)]',
       )}>
         {value.map((tag) => (
-          <span key={tag} className="flex items-center gap-1 rounded-md bg-brand-50 px-2 py-0.5 text-[11.5px] font-[500] text-brand-700 dark:bg-brand-950/50 dark:text-brand-300">
+          <span key={tag} className="flex items-center gap-1 rounded-md bg-brand-50 px-2 py-0.5 text-[11.5px] font-[500] text-brand-700 ">
             {tag}
             <button type="button" onClick={() => removeTag(tag)} className="leading-none opacity-60 hover:opacity-100">×</button>
           </span>

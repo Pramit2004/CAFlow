@@ -1,11 +1,13 @@
 import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
 
 interface Workspace {
   id: string
   name: string
-  slug: string
+  slug?: string
   plan: 'starter' | 'growth' | 'pro'
-  logoUrl?: string
+  planStatus?: string
+  logoUrl?: string | null
 }
 
 interface WorkspaceState {
@@ -14,8 +16,15 @@ interface WorkspaceState {
   clearWorkspace: () => void
 }
 
-export const useWorkspaceStore = create<WorkspaceState>((set) => ({
-  workspace: null,
-  setWorkspace: (workspace) => set({ workspace }),
-  clearWorkspace: () => set({ workspace: null }),
-}))
+export const useWorkspaceStore = create<WorkspaceState>()(
+  persist(
+    (set) => ({
+      workspace: null,
+      setWorkspace: (workspace) => set({ workspace }),
+      clearWorkspace: () => set({ workspace: null }),
+    }),
+    {
+      name: 'caflow-workspace',
+    },
+  ),
+)
