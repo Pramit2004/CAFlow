@@ -22,7 +22,7 @@ interface SelectProps {
 }
 
 export const Select = forwardRef<HTMLDivElement, SelectProps>(
-  ({ options, value, onChange, placeholder = 'Select...', label, error, hint, disabled, required, className }, ref) => {
+  ({ options, value, onChange, placeholder = 'Select...', label, error, hint, disabled, required, className }, _ref) => {
     const [open, setOpen] = useState(false)
     const containerRef = useRef<HTMLDivElement>(null)
 

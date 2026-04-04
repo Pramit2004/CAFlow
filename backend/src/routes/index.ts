@@ -1,4 +1,5 @@
 import { Hono } from 'hono'
+import { dashboardRoutes } from '../modules/dashboard/dashboard.routes.js'
 import { authRoutes } from '../modules/auth/auth.routes.js'
 import { workspaceRoutes } from '../modules/workspace/workspace.routes.js'
 import { clientRoutes } from '../modules/clients/clients.routes.js'
@@ -13,6 +14,7 @@ import { deadlineRoutes } from '../modules/deadlines/deadlines.routes.js'
 export const router = new Hono()
 
 router.route('/auth', authRoutes)
+router.route('/dashboard', dashboardRoutes)
 router.route('/workspaces', workspaceRoutes)
 router.route('/clients', clientRoutes)
 router.route('/cases', caseRoutes)

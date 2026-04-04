@@ -108,7 +108,7 @@ export async function verifyOtp(input: VerifyOtpInput) {
   if (!storedOtp) {
     throw new ValidationError('OTP expired or not found. Please request a new one.')
   }
-  if (storedOtp !== input.otp) {
+  if (String(storedOtp).trim() !== String(input.otp).trim()) {
     throw new UnauthorizedError('Invalid OTP. Please check and try again.')
   }
 

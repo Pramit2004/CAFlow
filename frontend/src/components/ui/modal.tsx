@@ -11,107 +11,83 @@ interface ModalProps {
   size?: 'sm' | 'md' | 'lg' | 'xl' | 'full'
   footer?: React.ReactNode
   className?: string
-  /** Prevent closing on backdrop click */
   persistent?: boolean
 }
 
 const sizes = {
-  sm: 'max-w-md',
-  md: 'max-w-lg',
-  lg: 'max-w-2xl',
-  xl: 'max-w-3xl',
-  full: 'max-w-[90vw]',
+  sm:   'max-w-md',
+  md:   'max-w-lg',
+  lg:   'max-w-2xl',
+  xl:   'max-w-3xl',
+  full: 'max-w-[92vw]',
 }
 
 export function Modal({
-  open,
-  onClose,
-  title,
-  description,
-  children,
-  size = 'md',
-  footer,
-  className,
-  persistent = false,
+  open, onClose, title, description, children, size = 'md',
+  footer, className, persistent = false,
 }: ModalProps) {
   const panelRef = useRef<HTMLDivElement>(null)
 
-  // Close on Escape
   useEffect(() => {
     if (!open) return
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && !persistent) onClose()
-    }
-    document.addEventListener('keydown', handler)
-    return () => document.removeEventListener('keydown', handler)
+    const h = (e: KeyboardEvent) => { if (e.key === 'Escape' && !persistent) onClose() }
+    document.addEventListener('keydown', h)
+    return () => document.removeEventListener('keydown', h)
   }, [open, onClose, persistent])
 
-  // Lock body scroll
   useEffect(() => {
-    if (open) {
-      document.body.style.overflow = 'hidden'
-    } else {
-      document.body.style.overflow = ''
-    }
+    document.body.style.overflow = open ? 'hidden' : ''
     return () => { document.body.style.overflow = '' }
   }, [open])
 
   if (!open) return null
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-end justify-center sm:items-center px-4 pb-4 sm:pb-0"
-      aria-modal="true"
-      role="dialog"
-    >
+    <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center px-4 pb-4 sm:pb-0" role="dialog" aria-modal="true">
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/50 backdrop-blur-[2px] animate-in fade-in-0 duration-200"
+        className="absolute inset-0 animate-in fade-in-0 duration-200"
+        style={{ background: 'rgba(26,21,18,0.55)', backdropFilter: 'blur(4px)' }}
         onClick={() => !persistent && onClose()}
       />
-
       {/* Panel */}
       <div
         ref={panelRef}
         className={cn(
-          'relative z-10 w-full rounded-2xl border border-[var(--border)] bg-[var(--surface)] shadow-xl',
-          'animate-in fade-in-0 zoom-in-95 slide-in-from-bottom-4 sm:slide-in-from-bottom-0 duration-200',
-          sizes[size],
-          className,
+          'relative z-10 w-full bg-white',
+          'animate-in fade-in-0 zoom-in-95 slide-in-from-bottom-4 sm:slide-in-from-bottom-0 duration-250',
+          sizes[size], className,
         )}
+        style={{
+          borderRadius: 20,
+          border: '1px solid #EDE8E1',
+          boxShadow: '0 32px 80px -12px rgba(26,21,18,0.22), 0 8px 24px -4px rgba(26,21,18,0.12)',
+        }}
       >
-        {/* Header */}
         {(title || description) && (
-          <div className="flex items-start justify-between border-b border-[var(--border)] px-6 py-4">
+          <div className="flex items-start justify-between px-6 py-5" style={{ borderBottom: '1px solid #EDE8E1' }}>
             <div>
               {title && (
-                <h2
-                  className="text-[16px] font-[700] text-[var(--text-primary)]"
-                  style={{ fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif' }}
-                >
+                <h2 className="text-[17px] font-[800] tracking-tight" style={{ fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif', color: '#1A1512' }}>
                   {title}
                 </h2>
               )}
-              {description && (
-                <p className="mt-0.5 text-[12.5px] text-[var(--text-tertiary)]">{description}</p>
-              )}
+              {description && <p className="mt-1 text-[13px]" style={{ color: '#6B6258' }}>{description}</p>}
             </div>
             <button
-              type="button"
-              onClick={onClose}
-              className="ml-4 flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg text-[var(--text-tertiary)] transition-colors hover:bg-[var(--bg-subtle)] hover:text-[var(--text-primary)]"
+              type="button" onClick={onClose}
+              className="ml-4 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl transition-all duration-150"
+              style={{ background: '#F5F2EE', color: '#6B6258' }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = '#EDE8E1' }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = '#F5F2EE' }}
             >
               <X className="h-4 w-4" />
             </button>
           </div>
         )}
-
-        {/* Body */}
         <div className="px-6 py-5">{children}</div>
-
-        {/* Footer */}
         {footer && (
-          <div className="flex items-center justify-end gap-3 border-t border-[var(--border)] px-6 py-4">
+          <div className="flex items-center justify-end gap-3 px-6 py-4" style={{ borderTop: '1px solid #EDE8E1' }}>
             {footer}
           </div>
         )}

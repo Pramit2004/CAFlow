@@ -4,9 +4,11 @@ import { env } from './index.js'
 function buildRedisClient(): Redis {
   const rawUrl = env.UPSTASH_REDIS_URL || ''
 
+  const opts = { automaticDeserialization: false } as const
+
   // If URL is already REST format (https://), use directly
   if (rawUrl.startsWith('https://')) {
-    return new Redis({ url: rawUrl, token: env.UPSTASH_REDIS_TOKEN || '' })
+    return new Redis({ url: rawUrl, token: env.UPSTASH_REDIS_TOKEN || '', ...opts })
   }
 
   // Convert rediss://default:TOKEN@HOST:PORT to REST format
@@ -15,11 +17,11 @@ function buildRedisClient(): Redis {
   if (match) {
     const token = match[1]
     const host = match[2]
-    return new Redis({ url: `https://${host}`, token })
+    return new Redis({ url: `https://${host}`, token, ...opts })
   }
 
   // Fallback: try with whatever we have
-  return new Redis({ url: rawUrl, token: env.UPSTASH_REDIS_TOKEN || '' })
+  return new Redis({ url: rawUrl, token: env.UPSTASH_REDIS_TOKEN || '', ...opts })
 }
 
 export const redis = buildRedisClient()

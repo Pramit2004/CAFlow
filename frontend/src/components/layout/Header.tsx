@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils'
 import { useUIStore } from '@/store/ui.store'
 
 export function Header() {
-  const { sidebarOpen } = useUIStore()
+  useUIStore()
   const [searchFocused, setSearchFocused] = useState(false)
 
   return (
