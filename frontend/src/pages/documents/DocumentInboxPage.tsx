@@ -2,11 +2,10 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import axios from 'axios'
 import {
   Inbox, FileText, CheckCircle2, XCircle, Clock,
-  Download, Eye, AlertTriangle, ChevronRight,
-  Upload, Filter, Search, RefreshCw, ExternalLink,
+  Download, Eye, ChevronRight,
+  Search, RefreshCw,
 } from 'lucide-react'
 import { api } from '@/services/api'
 import { Button } from '@/components/ui/button'
@@ -211,7 +210,6 @@ function DocRow({ doc }: { doc: InboxDoc }) {
   const { mutate: download, isPending: downloading } = useDownloadUrl()
 
   const isUploaded = doc.status === 'UPLOADED'
-  const isPending = doc.status === 'PENDING'
 
   return (
     <>
@@ -369,144 +367,159 @@ export default function DocumentInboxPage() {
   const pendingCount  = docs.filter((d) => d.status === 'PENDING').length
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full flex-col" style={{ background: '#F9F7F4' }}>
 
-      {/* ── Header ── */}
-      <div className="flex-shrink-0 border-b border-[var(--border)] bg-[var(--surface)] px-6 py-4">
-        <div className="flex items-center justify-between gap-4">
+      {/* ── Page Header ── */}
+      <div className="flex-shrink-0 px-6 pt-6 pb-4">
+        <div className="flex items-start justify-between gap-4">
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="text-[22px] font-[800] tracking-tight text-[var(--text-primary)]"
-                style={{ fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif' }}>
+              <h1 className="text-[24px] font-[800] tracking-tight"
+                style={{ fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif', color: '#1A1512' }}>
                 Document Inbox
               </h1>
               {uploadedCount > 0 && (
-                <span className="flex h-6 min-w-[24px] items-center justify-center rounded-full bg-blue-500 px-1.5 text-[11px] font-[700] text-white">
+                <span className="flex h-6 min-w-[24px] items-center justify-center rounded-full px-1.5 text-[11px] font-[700] text-white"
+                  style={{ background: '#C84B0F' }}>
                   {uploadedCount}
                 </span>
               )}
             </div>
-            <p className="mt-0.5 text-[12.5px] text-[var(--text-tertiary)]">
+            <p className="mt-0.5 text-[13px]" style={{ color: '#6B6258' }}>
               Review documents uploaded by your clients
             </p>
           </div>
 
-          <Button
-            variant="ghost"
-            size="sm"
-            leftIcon={<RefreshCw className={cn('h-3.5 w-3.5', isFetching && 'animate-spin')} />}
+          <button
+            type="button"
             onClick={() => refetch()}
+            className="flex h-9 items-center gap-2 rounded-xl border px-3.5 text-[13px] font-[600] transition-all duration-150"
+            style={{ borderColor: '#EDE8E1', color: '#1A1512', background: 'white' }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = '#F9F7F4' }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = 'white' }}
           >
+            <RefreshCw className={cn('h-3.5 w-3.5', isFetching && 'animate-spin')} />
             Refresh
-          </Button>
+          </button>
         </div>
 
-        {/* Stats row */}
+        {/* Stat pills */}
         <div className="mt-4 flex flex-wrap gap-3">
           {[
-            { id: 'all',      label: 'All',           count: docs.length,    color: 'text-[var(--text-primary)]', bg: 'bg-[var(--bg-subtle)]' },
-            { id: 'uploaded', label: 'Needs Review',  count: uploadedCount,  color: 'text-blue-600 dark:text-blue-400', bg: 'bg-blue-50 dark:bg-blue-950/40' },
-            { id: 'pending',  label: 'Awaiting Upload', count: pendingCount, color: 'text-amber-600 dark:text-amber-400', bg: 'bg-amber-50 dark:bg-amber-950/40' },
-          ].map(({ id, label, count, color, bg }) => (
+            { id: 'all',      label: 'All Documents', count: docs.length,   color: '#C84B0F', bg: '#FFF4EE', activeBg: '#FFF4EE', borderColor: '#F97316' },
+            { id: 'uploaded', label: 'Needs Review',  count: uploadedCount, color: '#0EA5E9', bg: '#E0F2FE', activeBg: '#E0F2FE', borderColor: '#38BDF8' },
+            { id: 'pending',  label: 'Awaiting Upload', count: pendingCount, color: '#D97706', bg: '#FEF3C7', activeBg: '#FEF3C7', borderColor: '#FCD34D' },
+          ].map(({ id, label, count, color, bg, borderColor }) => (
             <button
               key={id}
               type="button"
               onClick={() => setFilter(id as any)}
-              className={cn(
-                'flex items-center gap-2 rounded-lg border px-3 py-2 text-[12px] font-[500] transition-all',
-                filter === id
-                  ? `border-transparent ${bg} ${color} shadow-sm`
-                  : 'border-[var(--border)] text-[var(--text-secondary)] hover:border-[var(--border-strong)]',
-              )}
+              className="flex items-center gap-2.5 rounded-xl px-3.5 py-2.5 transition-all duration-150"
+              style={{
+                background: filter === id ? bg : 'white',
+                border: `1px solid ${filter === id ? borderColor : '#EDE8E1'}`,
+                boxShadow: filter === id ? `0 0 0 3px ${bg}` : '0 1px 4px rgba(26,21,18,0.05)',
+              }}
             >
-              <span className={cn('text-[18px] font-[800] leading-none', color)}
-                style={{ fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif' }}>
-                {count}
-              </span>
-              {label}
+              <p className="text-[20px] font-[800] leading-none"
+                style={{ fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif', color: filter === id ? color : '#1A1512' }}>
+                {isLoading ? '—' : count}
+              </p>
+              <p className="text-[11.5px] font-[500]" style={{ color: filter === id ? color : '#6B6258' }}>{label}</p>
             </button>
           ))}
         </div>
-
-        {/* Search */}
-        <div className="relative mt-3 max-w-xs">
-          <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[var(--text-tertiary)]" />
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search documents, clients…"
-            className="h-8 w-full rounded-lg border border-[var(--border)] bg-[var(--surface)] pl-9 pr-3 text-[13px] outline-none transition-all placeholder:text-[var(--text-tertiary)] focus:border-brand-400 focus:shadow-[0_0_0_3px_rgba(18,110,71,0.1)] hover:border-[var(--border-strong)]"
-          />
-        </div>
       </div>
 
-      {/* ── List ── */}
-      <div className="flex-1 overflow-auto p-6">
-        {isLoading ? (
-          <div className="flex flex-col gap-3">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="h-[72px] animate-pulse rounded-xl bg-[var(--border)]"
-                style={{ opacity: 1 - i * 0.15 }} />
-            ))}
+      {/* ── Main Card ── */}
+      <div className="mx-6 mb-6 flex flex-1 flex-col overflow-hidden rounded-2xl"
+        style={{
+          background: 'white',
+          border: '1px solid #EDE8E1',
+          boxShadow: '0 4px 24px -4px rgba(26,21,18,0.10), 0 1px 4px rgba(26,21,18,0.06)',
+        }}
+      >
+        {/* Toolbar */}
+        <div className="flex flex-shrink-0 items-center gap-3 px-5 py-3.5" style={{ borderBottom: '1px solid #F5F2EE' }}>
+          <div className="relative flex-1" style={{ maxWidth: 320 }}>
+            <Search className="pointer-events-none absolute left-3.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2" style={{ color: '#A09890' }} />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search documents, clients…"
+              className="h-9 w-full rounded-xl border pl-10 pr-3 text-[13px] outline-none transition-all duration-150 bg-white"
+              style={{ borderColor: '#EDE8E1', color: '#1A1512' }}
+              onFocus={(e) => { e.target.style.borderColor = '#C84B0F'; e.target.style.boxShadow = '0 0 0 3px rgba(200,75,15,0.12)' }}
+              onBlur={(e) => { e.target.style.borderColor = '#EDE8E1'; e.target.style.boxShadow = 'none' }}
+            />
           </div>
-        ) : filtered.length === 0 ? (
-          <div className="flex flex-col items-center gap-4 py-20 text-center">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[var(--bg-subtle)]">
-              <Inbox className="h-7 w-7 text-[var(--text-tertiary)]" />
+          <span className="ml-auto text-[12px]" style={{ color: '#A09890' }}>
+            {filtered.length} result{filtered.length !== 1 ? 's' : ''}
+          </span>
+        </div>
+
+        {/* List */}
+        <div className="flex-1 overflow-auto p-4">
+          {isLoading ? (
+            <div className="flex flex-col gap-3">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className="h-[72px] animate-pulse rounded-xl"
+                  style={{ background: '#F5F2EE', opacity: 1 - i * 0.15 }} />
+              ))}
             </div>
-            <div>
-              <p className="text-[14px] font-[600] text-[var(--text-primary)]">
-                {filter === 'all' ? 'Inbox is empty' : `No ${filter === 'uploaded' ? 'pending review' : 'awaiting upload'} documents`}
-              </p>
-              <p className="mt-1 text-[12.5px] text-[var(--text-tertiary)]">
-                {filter === 'all'
-                  ? 'Documents uploaded by clients will appear here.'
-                  : 'Try switching the filter above.'}
-              </p>
-            </div>
-          </div>
-        ) : (
-          <div className="flex flex-col gap-2.5">
-            {/* Needs review section */}
-            {filter === 'all' && uploadedCount > 0 && (
-              <div className="mb-1">
-                <p className="mb-2 flex items-center gap-2 text-[11px] font-[600] uppercase tracking-wider text-blue-600 dark:text-blue-400"
-                  style={{ fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif' }}>
-                  <Eye className="h-3.5 w-3.5" />
-                  Needs Review ({uploadedCount})
+          ) : filtered.length === 0 ? (
+            <div className="flex flex-col items-center gap-4 py-20 text-center">
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl" style={{ background: '#F5F2EE' }}>
+                <Inbox className="h-7 w-7" style={{ color: '#A09890' }} strokeWidth={1.5} />
+              </div>
+              <div>
+                <p className="text-[14px] font-[700]" style={{ color: '#1A1512', fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif' }}>
+                  {filter === 'all' ? 'Inbox is empty' : `No ${filter === 'uploaded' ? 'pending review' : 'awaiting upload'} documents`}
                 </p>
-                <div className="flex flex-col gap-2">
-                  {filtered.filter(d => d.status === 'UPLOADED').map((d) => (
-                    <DocRow key={d.id} doc={d} />
-                  ))}
-                </div>
+                <p className="mt-1 text-[13px]" style={{ color: '#A09890' }}>
+                  {filter === 'all' ? 'Documents uploaded by clients will appear here.' : 'Try switching the filter above.'}
+                </p>
               </div>
-            )}
-
-            {/* Other docs */}
-            {filter !== 'uploaded' && (
-              <>
-                {filter === 'all' && filtered.filter(d => d.status !== 'UPLOADED').length > 0 && (
-                  <p className="mt-2 mb-2 text-[11px] font-[600] uppercase tracking-wider text-[var(--text-tertiary)]"
-                    style={{ fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif' }}>
-                    All Other ({filtered.filter(d => d.status !== 'UPLOADED').length})
+            </div>
+          ) : (
+            <div className="flex flex-col gap-2.5">
+              {filter === 'all' && uploadedCount > 0 && (
+                <div className="mb-1">
+                  <p className="mb-2 flex items-center gap-2 text-[10.5px] font-[700] uppercase tracking-wider"
+                    style={{ fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif', color: '#C84B0F' }}>
+                    <Eye className="h-3.5 w-3.5" />
+                    Needs Review ({uploadedCount})
                   </p>
-                )}
-                <div className="flex flex-col gap-2">
-                  {filtered.filter(d => filter === 'all' ? d.status !== 'UPLOADED' : true).map((d) => (
-                    <DocRow key={d.id} doc={d} />
-                  ))}
+                  <div className="flex flex-col gap-2">
+                    {filtered.filter(d => d.status === 'UPLOADED').map((d) => (
+                      <DocRow key={d.id} doc={d} />
+                    ))}
+                  </div>
                 </div>
-              </>
-            )}
-
-            {filter === 'uploaded' && (
-              <div className="flex flex-col gap-2">
-                {filtered.map((d) => <DocRow key={d.id} doc={d} />)}
-              </div>
-            )}
-          </div>
-        )}
+              )}
+              {filter !== 'uploaded' && (
+                <>
+                  {filter === 'all' && filtered.filter(d => d.status !== 'UPLOADED').length > 0 && (
+                    <p className="mt-2 mb-2 text-[10.5px] font-[700] uppercase tracking-wider"
+                      style={{ fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif', color: '#A09890' }}>
+                      All Other ({filtered.filter(d => d.status !== 'UPLOADED').length})
+                    </p>
+                  )}
+                  <div className="flex flex-col gap-2">
+                    {filtered.filter(d => filter === 'all' ? d.status !== 'UPLOADED' : true).map((d) => (
+                      <DocRow key={d.id} doc={d} />
+                    ))}
+                  </div>
+                </>
+              )}
+              {filter === 'uploaded' && (
+                <div className="flex flex-col gap-2">
+                  {filtered.map((d) => <DocRow key={d.id} doc={d} />)}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )

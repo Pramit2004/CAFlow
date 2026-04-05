@@ -1,17 +1,16 @@
 import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import {
-  ArrowLeft, Calendar, IndianRupee, User, FileText,
-  CheckSquare, Square, Plus, Trash2, AlertTriangle,
-  Clock, ChevronRight, Edit3, Circle, CheckCircle2,
-  Loader2, Phone, Hash, AlertCircle,
+  ArrowLeft, Calendar, User, FileText,
+  CheckSquare, Plus, Trash2,
+  ChevronRight, Edit3, Circle, CheckCircle2,
+  Loader2, AlertCircle,
 } from 'lucide-react'
 import { useCase, useUpdateCase, useCreateTask, useUpdateTask, useDeleteTask } from '@/modules/cases/useCases'
 import { Tabs } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
 import { cn, formatCurrency } from '@/lib/utils'
 import type { CaseStatus, ServiceType } from '@/types/common.types'
@@ -49,7 +48,6 @@ const TASK_TYPE_LABELS: Record<Task['type'], string> = {
 
 function StatusSelector({ current, caseId }: { current: CaseStatus; caseId: string }) {
   const { mutate: update, isPending } = useUpdateCase(caseId)
-  const cfg = STATUS_OPTIONS.find((s) => s.value === current)
 
   return (
     <div className="flex items-center gap-2">
@@ -156,7 +154,7 @@ function TasksTab({ caseId, tasks }: { caseId: string; tasks: Task[] }) {
       )}
 
       {tasks.length === 0 && !adding && (
-        <div className="flex flex-col items-center gap-2 py-12 text-center">
+        <div className="flex flex-col items-center gap-3 py-16 text-center">
           <CheckSquare className="h-8 w-8 text-[var(--text-tertiary)]" />
           <p className="text-[13px] font-[600] text-[var(--text-primary)]">No tasks yet</p>
           <p className="text-[12px] text-[var(--text-tertiary)]">Add tasks to track progress on this case.</p>
@@ -302,7 +300,6 @@ export default function CaseDetailPage() {
     )
   }
 
-  const statusCfg = STATUS_OPTIONS.find((s) => s.value === caseData.status)
   const tasksDone = caseData.tasks.filter((t) => t.status === 'done').length
   const taskPct = caseData.tasks.length > 0
     ? Math.round((tasksDone / caseData.tasks.length) * 100) : 0
@@ -315,10 +312,10 @@ export default function CaseDetailPage() {
   }))
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full flex-col" style={{ background: '#F9F7F4' }}>
 
       {/* ── Header ── */}
-      <div className="flex-shrink-0 border-b border-[var(--border)] bg-[var(--surface)] px-6 py-4">
+      <div className="flex-shrink-0 px-6 py-4" style={{ background: 'white', borderBottom: '1px solid #EDE8E1' }}>
 
         {/* Breadcrumb */}
         <div className="mb-3 flex items-center gap-1.5 text-[11.5px] text-[var(--text-tertiary)]">
@@ -407,125 +404,157 @@ export default function CaseDetailPage() {
       </div>
 
       {/* ── Tab Content ── */}
-      <div className="flex-1 overflow-auto p-6">
+      <div className="flex-1 overflow-auto p-6" style={{ background: '#F9F7F4' }}>
 
         {activeTab === 'overview' && (
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
             {/* Left */}
             <div className="lg:col-span-2 flex flex-col gap-5">
 
               {/* Fee summary */}
               {(caseData.feeQuoted || caseData.feeBilled || caseData.feeReceived) && (
-                <Card padding="md">
-                  <p className="mb-3 text-[11px] font-[600] uppercase tracking-wider text-[var(--text-tertiary)]"
-                    style={{ fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif' }}>
-                    Fee Summary
-                  </p>
-                  <div className="grid grid-cols-3 gap-4">
+                <div className="rounded-2xl overflow-hidden"
+                  style={{ background: 'white', border: '1px solid #EDE8E1', boxShadow: '0 2px 8px rgba(26,21,18,0.06)' }}>
+                  <div className="px-5 py-3.5" style={{ borderBottom: '1px solid #F5F2EE' }}>
+                    <p className="text-[10.5px] font-[700] uppercase tracking-wider"
+                      style={{ fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif', color: '#A09890' }}>
+                      Fee Summary
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-3 gap-0 divide-x" style={{ borderColor: '#F5F2EE' }}>
                     {[
                       { label: 'Quoted',   value: caseData.feeQuoted },
                       { label: 'Billed',   value: caseData.feeBilled },
                       { label: 'Received', value: caseData.feeReceived, highlight: true },
                     ].map(({ label, value, highlight }) => (
-                      <div key={label}>
-                        <p className="text-[10.5px] text-[var(--text-tertiary)]">{label}</p>
-                        <p className={cn(
-                          'text-[18px] font-[800] leading-snug',
-                          highlight ? 'text-brand-600 dark:text-brand-400' : 'text-[var(--text-primary)]',
-                        )} style={{ fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif' }}>
+                      <div key={label} className="px-5 py-4">
+                        <p className="text-[11px]" style={{ color: '#A09890' }}>{label}</p>
+                        <p className="mt-0.5 text-[20px] font-[800] leading-none"
+                          style={{ fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif', color: highlight ? '#C84B0F' : '#1A1512' }}>
                           {value ? formatCurrency(value) : '—'}
                         </p>
                       </div>
                     ))}
                   </div>
                   {caseData.feeQuoted && caseData.feeReceived && (
-                    <>
-                      <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-[var(--border)]">
-                        <div
-                          className="h-full rounded-full bg-brand-500 transition-all duration-700"
-                          style={{ width: `${Math.min(100, (parseFloat(caseData.feeReceived) / parseFloat(caseData.feeQuoted)) * 100)}%` }}
-                        />
+                    <div className="px-5 pb-4">
+                      <div className="h-1.5 w-full overflow-hidden rounded-full" style={{ background: '#F5F2EE' }}>
+                        <div className="h-full rounded-full transition-all duration-700"
+                          style={{ width: `${Math.min(100, (parseFloat(caseData.feeReceived) / parseFloat(caseData.feeQuoted)) * 100)}%`, background: 'linear-gradient(90deg, #C84B0F, #F97316)' }} />
                       </div>
-                      <p className="mt-1 text-[11px] text-[var(--text-tertiary)]">
+                      <p className="mt-1.5 text-[11px]" style={{ color: '#A09890' }}>
                         {Math.round((parseFloat(caseData.feeReceived) / parseFloat(caseData.feeQuoted)) * 100)}% collected
                       </p>
-                    </>
+                    </div>
                   )}
-                </Card>
+                </div>
               )}
 
               {/* Description */}
               {caseData.description && (
-                <Card padding="md">
-                  <p className="mb-2 text-[11px] font-[600] uppercase tracking-wider text-[var(--text-tertiary)]"
-                    style={{ fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif' }}>
-                    Notes
+                <div className="rounded-2xl px-5 py-4"
+                  style={{ background: 'white', border: '1px solid #EDE8E1', boxShadow: '0 2px 8px rgba(26,21,18,0.06)' }}>
+                  <p className="mb-2.5 text-[10.5px] font-[700] uppercase tracking-wider"
+                    style={{ fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif', color: '#A09890' }}>
+                    Internal Notes
                   </p>
-                  <p className="text-[13px] leading-relaxed text-[var(--text-secondary)]">
+                  <p className="text-[13px] leading-relaxed" style={{ color: '#6B6258' }}>
                     {caseData.description}
                   </p>
-                </Card>
+                </div>
               )}
             </div>
 
-            {/* Right: client card */}
+            {/* Right: client + details */}
             <div className="flex flex-col gap-5">
               {caseData.client && (
-                <Card padding="md" hover onClick={() => navigate(`/clients/${caseData.clientId}`)}>
-                  <p className="mb-3 text-[11px] font-[600] uppercase tracking-wider text-[var(--text-tertiary)]"
-                    style={{ fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif' }}>
+                <div className="cursor-pointer rounded-2xl px-5 py-4 transition-all duration-150"
+                  style={{ background: 'white', border: '1px solid #EDE8E1', boxShadow: '0 2px 8px rgba(26,21,18,0.06)' }}
+                  onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#C84B0F'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(200,75,15,0.12)' }}
+                  onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#EDE8E1'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(26,21,18,0.06)' }}
+                  onClick={() => navigate(`/clients/${caseData.clientId}`)}
+                >
+                  <p className="mb-3 text-[10.5px] font-[700] uppercase tracking-wider"
+                    style={{ fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif', color: '#A09890' }}>
                     Client
                   </p>
                   <div className="flex items-center gap-3">
-                    <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-brand-100 text-[11px] font-[700] text-brand-700 dark:bg-brand-950/50 dark:text-brand-300">
+                    <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full text-[12px] font-[700] text-white"
+                      style={{ background: 'linear-gradient(135deg, #C84B0F, #F97316)' }}>
                       {caseData.client.name?.charAt(0).toUpperCase()}
                     </div>
                     <div>
-                      <p className="text-[13.5px] font-[700] text-[var(--text-primary)]">{caseData.client.name}</p>
+                      <p className="text-[13.5px] font-[700]" style={{ color: '#1A1512' }}>{caseData.client.name}</p>
                       {caseData.client.phone && (
-                        <p className="text-[11.5px] text-[var(--text-tertiary)]">+91 {caseData.client.phone}</p>
+                        <p className="text-[11.5px]" style={{ color: '#A09890' }}>+91 {caseData.client.phone}</p>
                       )}
                     </div>
                   </div>
                   {caseData.client.pan && (
-                    <p className="mt-2 font-mono text-[11.5px] text-[var(--text-tertiary)]">PAN: {caseData.client.pan}</p>
+                    <p className="mt-2 font-mono text-[11.5px]" style={{ color: '#A09890' }}>PAN: {caseData.client.pan}</p>
                   )}
-                  <div className="mt-2 flex items-center gap-1 text-[11.5px] text-brand-600 dark:text-brand-400">
+                  <div className="mt-3 flex items-center gap-1 text-[11.5px] font-[600]" style={{ color: '#C84B0F' }}>
                     View profile <ChevronRight className="h-3 w-3" />
                   </div>
-                </Card>
+                </div>
               )}
 
-              {/* Case meta */}
-              <Card padding="md">
-                <p className="mb-3 text-[11px] font-[600] uppercase tracking-wider text-[var(--text-tertiary)]"
-                  style={{ fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif' }}>
-                  Details
-                </p>
-                {[
-                  { label: 'Service',        value: caseData.serviceType },
-                  { label: 'Financial Year', value: caseData.financialYear ?? '—' },
-                  { label: 'Deadline',       value: caseData.deadline ? new Date(caseData.deadline).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }) : '—' },
-                  { label: 'Created',        value: new Date(caseData.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) },
-                ].map(({ label, value }) => (
-                  <div key={label} className="flex items-center justify-between py-1.5 border-b border-[var(--border)] last:border-0">
-                    <span className="text-[11.5px] text-[var(--text-tertiary)]">{label}</span>
-                    <span className="text-[12.5px] font-[500] text-[var(--text-primary)]">{value}</span>
-                  </div>
-                ))}
-              </Card>
+              <div className="rounded-2xl overflow-hidden"
+                style={{ background: 'white', border: '1px solid #EDE8E1', boxShadow: '0 2px 8px rgba(26,21,18,0.06)' }}>
+                <div className="px-5 py-3.5" style={{ borderBottom: '1px solid #F5F2EE' }}>
+                  <p className="text-[10.5px] font-[700] uppercase tracking-wider"
+                    style={{ fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif', color: '#A09890' }}>
+                    Details
+                  </p>
+                </div>
+                <div className="px-5 py-1">
+                  {[
+                    { label: 'Service',        value: caseData.serviceType },
+                    { label: 'Financial Year', value: caseData.financialYear ?? '—' },
+                    { label: 'Deadline',       value: caseData.deadline ? new Date(caseData.deadline).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' }) : '—' },
+                    { label: 'Created',        value: new Date(caseData.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) },
+                  ].map(({ label, value }) => (
+                    <div key={label} className="flex items-center justify-between py-2.5" style={{ borderBottom: '1px solid #F9F7F4' }}>
+                      <span className="text-[12px]" style={{ color: '#A09890' }}>{label}</span>
+                      <span className="text-[12.5px] font-[600]" style={{ color: '#1A1512' }}>{value}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         )}
 
         {activeTab === 'tasks' && (
           <div className="max-w-2xl">
-            <TasksTab caseId={caseData.id} tasks={caseData.tasks} />
+            <div className="rounded-2xl overflow-hidden"
+              style={{ background: 'white', border: '1px solid #EDE8E1', boxShadow: '0 2px 8px rgba(26,21,18,0.06)' }}>
+              <div className="px-5 py-3.5" style={{ borderBottom: '1px solid #F5F2EE' }}>
+                <p className="text-[10.5px] font-[700] uppercase tracking-wider"
+                  style={{ fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif', color: '#A09890' }}>
+                  Tasks · {caseData.tasks.length}
+                </p>
+              </div>
+              <div className="p-4">
+                <TasksTab caseId={caseData.id} tasks={caseData.tasks} />
+              </div>
+            </div>
           </div>
         )}
 
         {activeTab === 'documents' && (
-          <DocumentsTab documents={caseData.documents} />
+          <div className="rounded-2xl overflow-hidden"
+            style={{ background: 'white', border: '1px solid #EDE8E1', boxShadow: '0 2px 8px rgba(26,21,18,0.06)' }}>
+            <div className="px-5 py-3.5" style={{ borderBottom: '1px solid #F5F2EE' }}>
+              <p className="text-[10.5px] font-[700] uppercase tracking-wider"
+                style={{ fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif', color: '#A09890' }}>
+                Documents · {caseData.documents.length}
+              </p>
+            </div>
+            <div className="p-4">
+              <DocumentsTab documents={caseData.documents} />
+            </div>
+          </div>
         )}
       </div>
     </div>

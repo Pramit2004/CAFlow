@@ -1,12 +1,12 @@
 import { useState } from 'react'
-import { useParams, useNavigate, Link } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import {
   ArrowLeft, Phone, Mail, Hash, MapPin, Calendar, Building2,
   Tag, FileText, Edit3, Copy, CheckCircle, Clock, FolderOpen,
-  Upload, ExternalLink, AlertCircle, IndianRupee, ChevronRight,
+  Upload, AlertCircle, ChevronRight,
   User, Globe, Briefcase,
 } from 'lucide-react'
-import { useClient, useClientCases, useUpdateClient } from '@/modules/clients/useClients'
+import { useClient, useClientCases } from '@/modules/clients/useClients'
 import { Tabs } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -308,7 +308,6 @@ function CasesTab({ clientId }: { clientId: string }) {
     <div className="flex flex-col gap-2">
       {cases.map((c: any) => {
         const status = STATUS_CONFIG[c.status as CaseStatus]
-        const StatusIcon = status?.icon ?? Clock
         return (
           <div key={c.id}
             onClick={() => navigate(`/cases/${c.id}`)}
@@ -349,7 +348,7 @@ function CasesTab({ clientId }: { clientId: string }) {
 
 // ── Documents tab ──────────────────────────────────────────────────────────
 
-function DocumentsTab({ clientId }: { clientId: string }) {
+function DocumentsTab({ clientId: _clientId }: { clientId: string }) {
   return (
     <div className="flex flex-col items-center gap-3 py-16 text-center">
       <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[var(--bg-subtle)]">
@@ -436,10 +435,10 @@ export default function ClientDetailPage() {
   }))
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full flex-col" style={{ background: '#F9F7F4' }}>
 
       {/* ── Profile Header ── */}
-      <div className="flex-shrink-0 border-b border-[var(--border)] bg-[var(--surface)] px-6 py-5">
+      <div className="flex-shrink-0 px-6 py-5" style={{ background: 'white', borderBottom: '1px solid #EDE8E1' }}>
 
         {/* Breadcrumb */}
         <div className="mb-4 flex items-center gap-1.5 text-[11.5px] text-[var(--text-tertiary)]">
@@ -537,7 +536,7 @@ export default function ClientDetailPage() {
       </div>
 
       {/* ── Tab Content ── */}
-      <div className="flex-1 overflow-auto p-6">
+      <div className="flex-1 overflow-auto p-6" style={{ background: '#F9F7F4' }}>
         {activeTab === 'overview'  && <OverviewTab  client={client} />}
         {activeTab === 'cases'     && <CasesTab     clientId={id!} />}
         {activeTab === 'documents' && <DocumentsTab clientId={id!} />}

@@ -87,7 +87,7 @@ export function useMoveCase() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['cases', 'kanban'] })
     },
-    onError: (e: any) => {
+    onError: (_e: any) => {
       toast.error('Failed to move case')
       qc.invalidateQueries({ queryKey: ['cases', 'kanban'] })
     },

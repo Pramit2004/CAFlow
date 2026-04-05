@@ -16,6 +16,8 @@ const DocumentInboxPage = lazy(() => import('@/pages/documents/DocumentInboxPage
 const InvoicesPage = lazy(() => import('@/pages/fees/InvoicesPage'))
 const PaymentsPage = lazy(() => import('@/pages/fees/PaymentsPage'))
 const CompliancePage = lazy(() => import('@/pages/calendar/CompliancePage'))
+const TasksPage = lazy(() => import('@/pages/tasks/TasksPage'))
+const CommunicationsPage = lazy(() => import('@/pages/communications/CommunicationsPage'))
 const TeamPage = lazy(() => import('@/pages/team/TeamPage'))
 const FirmSettingsPage = lazy(() => import('@/pages/settings/FirmSettingsPage'))
 const NotificationsSettingsPage = lazy(() => import('@/pages/settings/NotificationsPage'))
@@ -49,6 +51,8 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <Navigate to="/dashboard" replace /> },
       { path: '/dashboard', element: wrap(<DashboardPage />) },
+      { path: '/tasks', element: wrap(<TasksPage />) },
+      { path: '/communications', element: wrap(<CommunicationsPage />) },
       { path: '/clients', element: wrap(<ClientsPage />) },
       { path: '/clients/:id', element: wrap(<ClientDetailPage />) },
       { path: '/cases', element: wrap(<CasesPage />) },

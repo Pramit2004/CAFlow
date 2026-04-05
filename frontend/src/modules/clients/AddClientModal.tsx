@@ -4,10 +4,11 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import {
   User, Mail, Hash, Building2, MapPin, Tag,
-  ChevronRight, CheckCircle2, Loader2,
+  ChevronRight, CheckCircle2, Loader2, AlertCircle,
 } from 'lucide-react'
 import { Modal } from '@/components/ui/modal'
 import { useCreateClient } from './useClients'
+import { toast } from 'sonner'
 
 // ── Schema ─────────────────────────────────────────────────────────────────
 const schema = z.object({
@@ -136,6 +137,17 @@ export function AddClientModal({ open, onClose }: { open: boolean; onClose: () =
     createClient(cleaned, { onSuccess: handleClose })
   }
 
+  const handleNext = () => setStep(step + 1)
+
+  const handleSubmitClick = () => {
+    // Show first validation error as toast so user knows which field failed
+    handleSubmit(onSubmit, (errs) => {
+      const firstErr = Object.values(errs)[0]
+      const msg = (firstErr as any)?.message as string | undefined
+      if (msg) toast.error(`Fix: ${msg}`)
+    })()
+  }
+
   const addTag = (tag: string) => {
     const t = tag.trim().toLowerCase()
     if (t && !tags.includes(t)) setValue('tags', [...tags, t])
@@ -173,7 +185,7 @@ export function AddClientModal({ open, onClose }: { open: boolean; onClose: () =
               </button>
             )}
             {step < STEPS.length - 1 ? (
-              <button type="button" onClick={() => setStep(step + 1)}
+              <button type="button" onClick={handleNext}
                 className="flex h-9 items-center gap-2 px-5 rounded-xl text-[13px] font-[700] text-white transition-all duration-150"
                 style={{ background: 'linear-gradient(135deg, #C84B0F 0%, #F97316 100%)', boxShadow: '0 4px 14px rgba(200,75,15,0.28)', fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif' }}
                 onMouseEnter={(e) => { e.currentTarget.style.boxShadow = '0 6px 20px rgba(200,75,15,0.38)' }}
@@ -182,7 +194,7 @@ export function AddClientModal({ open, onClose }: { open: boolean; onClose: () =
                 Next <ChevronRight className="h-3.5 w-3.5" />
               </button>
             ) : (
-              <button type="button" onClick={handleSubmit(onSubmit)} disabled={isPending}
+              <button type="button" onClick={handleSubmitClick} disabled={isPending}
                 className="flex h-9 items-center gap-2 px-5 rounded-xl text-[13px] font-[700] text-white transition-all duration-150 disabled:opacity-60"
                 style={{ background: 'linear-gradient(135deg, #C84B0F 0%, #F97316 100%)', boxShadow: '0 4px 14px rgba(200,75,15,0.28)', fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif' }}
               >
@@ -278,34 +290,34 @@ export function AddClientModal({ open, onClose }: { open: boolean; onClose: () =
 
         {/* ── Step 1: Tax IDs ── */}
         {step === 1 && (
-          <div className="grid grid-cols-2 gap-4">
-            <div className="col-span-2">
-              <Field label="PAN (Permanent Account Number)" error={errors.pan?.message} hint="10-character PAN e.g. ABCDE1234F">
-                <StyledInput placeholder="ABCDE1234F" hasError={!!errors.pan} className="uppercase font-mono tracking-widest"
-                  {...register('pan', { onChange: (e) => { e.target.value = e.target.value.toUpperCase() } })} />
+          <div className="flex flex-col gap-4">
+            <Field label="PAN (Permanent Account Number)" error={errors.pan?.message} hint="10-character alphanumeric — e.g. ABCDE1234F">
+              <StyledInput placeholder="ABCDE1234F" hasError={!!errors.pan} className="uppercase font-mono tracking-widest"
+                {...register('pan', { onChange: (e) => { e.target.value = e.target.value.toUpperCase() } })} />
+            </Field>
+
+            <Field label="GSTIN" error={errors.gstin?.message} hint="15-character GST Identification Number">
+              <StyledInput placeholder="27ABCDE1234F1Z5" className="uppercase font-mono tracking-wider" hasError={!!errors.gstin}
+                {...register('gstin', { onChange: (e) => { e.target.value = e.target.value.toUpperCase() } })} />
+            </Field>
+
+            <div className="grid grid-cols-2 gap-4">
+              <Field label="Aadhaar (Last 4 digits)" error={errors.aadhaarLast4?.message}>
+                <StyledInput placeholder="1234" maxLength={4} hasError={!!errors.aadhaarLast4} {...register('aadhaarLast4')} />
+              </Field>
+
+              <Field label="Spouse PAN" error={errors.spousePan?.message} hint="For HUF / joint">
+                <StyledInput placeholder="FGHIJ5678K" className="uppercase tracking-widest" hasError={!!errors.spousePan}
+                  {...register('spousePan', { onChange: (e) => { e.target.value = e.target.value.toUpperCase() } })} />
               </Field>
             </div>
 
-            <Field label="Aadhaar (Last 4 digits)" error={errors.aadhaarLast4?.message}>
-              <StyledInput placeholder="1234" maxLength={4} hasError={!!errors.aadhaarLast4} {...register('aadhaarLast4')} />
-            </Field>
-
-            <Field label="Spouse PAN" error={errors.spousePan?.message} hint="For HUF / joint filings">
-              <StyledInput placeholder="FGHIJ5678K" className="uppercase tracking-widest" hasError={!!errors.spousePan}
-                {...register('spousePan', { onChange: (e) => { e.target.value = e.target.value.toUpperCase() } })} />
-            </Field>
-
-            <div className="col-span-2">
-              <Field label="GSTIN" error={errors.gstin?.message} hint="15-character GST Identification Number">
-                <StyledInput placeholder="27ABCDE1234F1Z5" className="uppercase font-mono tracking-wider" hasError={!!errors.gstin}
-                  {...register('gstin', { onChange: (e) => { e.target.value = e.target.value.toUpperCase() } })} />
-              </Field>
-            </div>
-
-            {/* Visual hint box */}
-            <div className="col-span-2 rounded-xl p-4" style={{ background: '#FFF4EE', border: '1px solid #FFE4D0' }}>
-              <p className="text-[12px] font-[600]" style={{ color: '#C84B0F' }}>💡 All tax IDs are optional</p>
-              <p className="mt-1 text-[11.5px]" style={{ color: '#7D2D09' }}>You can always add or update them later from the client's profile page.</p>
+            <div className="flex items-start gap-2.5 rounded-xl p-3.5" style={{ background: '#FFF4EE', border: '1px solid #FFE4D0' }}>
+              <AlertCircle className="h-4 w-4 flex-shrink-0 mt-0.5" style={{ color: '#C84B0F' }} />
+              <div>
+                <p className="text-[12px] font-[600]" style={{ color: '#C84B0F' }}>All tax IDs are optional</p>
+                <p className="mt-0.5 text-[11.5px]" style={{ color: '#7D2D09' }}>You can add or update them anytime from the client profile.</p>
+              </div>
             </div>
           </div>
         )}
@@ -340,68 +352,68 @@ export function AddClientModal({ open, onClose }: { open: boolean; onClose: () =
 
         {/* ── Step 3: Preferences ── */}
         {step === 3 && (
-          <div className="grid grid-cols-2 gap-4">
+          <div className="flex flex-col gap-4">
             <Field label="Preferred Language">
               <Controller name="preferredLanguage" control={control} render={({ field }) => (
                 <StyledSelect value={field.value} onChange={field.onChange}
-                  options={[{ value: 'en', label: 'English' }, { value: 'gu', label: 'Gujarati (ગુજરાતી)' }, { value: 'hi', label: 'Hindi (हिंदी)' }]} />
+                  options={[
+                    { value: 'en', label: 'English' },
+                    { value: 'gu', label: 'Gujarati (ગુજરાતી)' },
+                    { value: 'hi', label: 'Hindi (हिंदी)' },
+                  ]} />
               )} />
             </Field>
 
-            <div />
-
-            <div className="col-span-2">
-              <Field label="Tags">
-                <div className="flex flex-wrap gap-1.5 rounded-xl border p-2.5 min-h-[44px]"
-                  style={{ borderColor: '#EDE8E1', background: '#FAFAF8' }}
-                  onClick={() => document.getElementById('tag-input')?.focus()}
-                >
-                  {tags.map((t) => (
-                    <span key={t} className="flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-[11.5px] font-[600]"
-                      style={{ background: '#FFF4EE', color: '#C84B0F', border: '1px solid #FFE4D0' }}>
-                      {t}
-                      <button type="button" onClick={() => removeTag(t)} className="text-[10px] leading-none opacity-60 hover:opacity-100">×</button>
-                    </span>
-                  ))}
-                  <input
-                    id="tag-input" value={tagInput}
-                    onChange={(e) => setTagInput(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); addTag(tagInput) }
-                      if (e.key === 'Backspace' && !tagInput && tags.length) removeTag(tags[tags.length - 1])
-                    }}
-                    placeholder={tags.length ? '' : 'Type a tag and press Enter…'}
-                    className="flex-1 bg-transparent text-[12.5px] outline-none min-w-[120px]"
-                    style={{ color: '#1A1512' }}
-                  />
-                </div>
-                <div className="flex flex-wrap gap-1.5 mt-2">
-                  {TAG_OPTIONS.filter((t) => !tags.includes(t)).map((t) => (
-                    <button key={t} type="button" onClick={() => addTag(t)}
-                      className="rounded-lg px-2.5 py-1 text-[11px] font-[500] transition-colors duration-100"
-                      style={{ background: '#F5F2EE', color: '#6B6258', border: '1px solid #EDE8E1' }}
-                      onMouseEnter={(e) => { e.currentTarget.style.background = '#FFF4EE'; e.currentTarget.style.color = '#C84B0F'; e.currentTarget.style.borderColor = '#FFE4D0' }}
-                      onMouseLeave={(e) => { e.currentTarget.style.background = '#F5F2EE'; e.currentTarget.style.color = '#6B6258'; e.currentTarget.style.borderColor = '#EDE8E1' }}
-                    >
-                      + {t}
-                    </button>
-                  ))}
-                </div>
-              </Field>
-            </div>
-
-            <div className="col-span-2">
-              <Field label="Internal Notes">
-                <textarea
-                  placeholder="Any private notes about this client (not visible to client)…"
-                  rows={3}
-                  className="w-full resize-none rounded-xl border px-3.5 py-2.5 text-[13px] outline-none transition-all duration-150 bg-white"
-                  style={{ borderColor: '#EDE8E1', color: '#1A1512' }}
-                  onFocus={(e) => { e.target.style.borderColor = '#C84B0F'; e.target.style.boxShadow = '0 0 0 3px rgba(200,75,15,0.12)' }}
-                  {...register('notes', { onBlur: (e) => { e.target.style.borderColor = '#EDE8E1'; e.target.style.boxShadow = 'none' } })}
+            <Field label="Tags">
+              <div
+                className="flex flex-wrap gap-1.5 rounded-xl border p-2.5 min-h-[44px]"
+                style={{ borderColor: '#EDE8E1', background: '#FAFAF8' }}
+                onClick={() => document.getElementById('tag-input')?.focus()}
+              >
+                {tags.map((t) => (
+                  <span key={t} className="flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-[11.5px] font-[600]"
+                    style={{ background: '#FFF4EE', color: '#C84B0F', border: '1px solid #FFE4D0' }}>
+                    {t}
+                    <button type="button" onClick={() => removeTag(t)} className="text-[10px] leading-none opacity-60 hover:opacity-100">×</button>
+                  </span>
+                ))}
+                <input
+                  id="tag-input"
+                  value={tagInput}
+                  onChange={(e) => setTagInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); addTag(tagInput) }
+                    if (e.key === 'Backspace' && !tagInput && tags.length) removeTag(tags[tags.length - 1])
+                  }}
+                  placeholder={tags.length ? '' : 'Type a tag and press Enter…'}
+                  className="flex-1 bg-transparent text-[12.5px] outline-none min-w-[120px]"
+                  style={{ color: '#1A1512' }}
                 />
-              </Field>
-            </div>
+              </div>
+              <div className="flex flex-wrap gap-1.5 mt-2">
+                {TAG_OPTIONS.filter((t) => !tags.includes(t)).map((t) => (
+                  <button key={t} type="button" onClick={() => addTag(t)}
+                    className="rounded-lg px-2.5 py-1 text-[11px] font-[500] transition-colors duration-100"
+                    style={{ background: '#F5F2EE', color: '#6B6258', border: '1px solid #EDE8E1' }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = '#FFF4EE'; e.currentTarget.style.color = '#C84B0F'; e.currentTarget.style.borderColor = '#FFE4D0' }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = '#F5F2EE'; e.currentTarget.style.color = '#6B6258'; e.currentTarget.style.borderColor = '#EDE8E1' }}
+                  >
+                    + {t}
+                  </button>
+                ))}
+              </div>
+            </Field>
+
+            <Field label="Internal Notes">
+              <textarea
+                placeholder="Any private notes about this client (not visible to client)…"
+                rows={3}
+                className="w-full resize-none rounded-xl border px-3.5 py-2.5 text-[13px] outline-none transition-all duration-150 bg-white"
+                style={{ borderColor: '#EDE8E1', color: '#1A1512' }}
+                onFocus={(e) => { e.target.style.borderColor = '#C84B0F'; e.target.style.boxShadow = '0 0 0 3px rgba(200,75,15,0.12)' }}
+                {...register('notes', { onBlur: (e) => { e.target.style.borderColor = '#EDE8E1'; e.target.style.boxShadow = 'none' } })}
+              />
+            </Field>
           </div>
         )}
       </div>

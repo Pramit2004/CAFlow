@@ -2,8 +2,8 @@ import { useEffect } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Briefcase, Calendar, IndianRupee, User, FileText } from 'lucide-react'
-import { Drawer } from '@/components/ui/modal'
+import { Briefcase, Calendar, IndianRupee } from 'lucide-react'
+import { Modal } from '@/components/ui/modal'
 import { Button } from '@/components/ui/button'
 import { Input, Textarea } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
@@ -111,12 +111,12 @@ export function CreateCaseModal({ open, onClose, defaultClientId }: CreateCaseMo
   }
 
   return (
-    <Drawer
+    <Modal
       open={open}
       onClose={handleClose}
       title="New Case"
       description="Create a new case for a client service."
-      width="w-[480px]"
+      size="md"
       footer={
         <>
           <Button variant="secondary" size="sm" onClick={handleClose} disabled={isPending}>
@@ -215,6 +215,6 @@ export function CreateCaseModal({ open, onClose, defaultClientId }: CreateCaseMo
         />
 
       </form>
-    </Drawer>
+    </Modal>
   )
 }

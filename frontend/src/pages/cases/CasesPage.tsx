@@ -6,7 +6,6 @@ import {
 } from 'lucide-react'
 import { useKanban, useMoveCase } from '@/modules/cases/useCases'
 import { CreateCaseModal } from '@/modules/cases/CreateCaseModal'
-import { Button } from '@/components/ui/button'
 import { Select } from '@/components/ui/select'
 import { cn, formatCurrency, getInitials } from '@/lib/utils'
 import type { CaseStatus, ServiceType } from '@/types/common.types'
@@ -164,10 +163,9 @@ interface ColumnProps {
   onDragStart: (e: React.DragEvent, caseId: string, fromStatus: CaseStatus) => void
   onDrop: (toStatus: CaseStatus) => void
   onCardClick: (id: string) => void
-  onAddCase: () => void
 }
 
-function KanbanColumn({ col, cards, onDragStart, onDrop, onCardClick, onAddCase }: ColumnProps) {
+function KanbanColumn({ col, cards, onDragStart, onDrop, onCardClick }: ColumnProps) {
   const [isOver, setIsOver] = useState(false)
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -186,7 +184,7 @@ function KanbanColumn({ col, cards, onDragStart, onDrop, onCardClick, onAddCase 
   const totalFee = cards.reduce((sum, c) => sum + (c.feeQuoted ? parseFloat(c.feeQuoted) : 0), 0)
 
   return (
-    <div className="flex w-[272px] flex-shrink-0 flex-col">
+    <div className="flex w-[220px] flex-shrink-0 flex-col xl:w-[240px]">
       {/* Column header */}
       <div className={cn(
         'mb-2 flex items-center justify-between rounded-xl border px-3 py-2.5',
@@ -232,20 +230,12 @@ function KanbanColumn({ col, cards, onDragStart, onDrop, onCardClick, onAddCase 
             onClick={() => onCardClick(c.id)}
           />
         ))}
-
-        {/* Add card button */}
-        <button
-          type="button"
-          onClick={onAddCase}
-          className={cn(
-            'flex items-center gap-2 rounded-xl border border-dashed px-3 py-2.5 text-[12px] font-[500]',
-            'border-[var(--border)] text-[var(--text-tertiary)] transition-colors',
-            'hover:border-brand-400/50 hover:bg-brand-50/30 hover:text-brand-600 dark:hover:bg-brand-950/10 dark:hover:text-brand-400',
-          )}
-        >
-          <Plus className="h-3.5 w-3.5" />
-          Add case
-        </button>
+        {cards.length === 0 && (
+          <div className="flex flex-col items-center gap-1 py-8 text-center opacity-50">
+            <div className="h-8 w-8 rounded-lg" style={{ background: '#F5F2EE' }} />
+            <p className="text-[11px]" style={{ color: '#A09890' }}>Drop cards here</p>
+          </div>
+        )}
       </div>
     </div>
   )
@@ -298,65 +288,62 @@ export default function CasesPage() {
     : 0
 
   return (
-    <div className="flex h-full flex-col overflow-hidden">
+    <div className="flex h-full flex-col overflow-hidden" style={{ background: '#F9F7F4' }}>
 
-      {/* ── Header ── */}
-      <div className="flex-shrink-0 border-b border-[var(--border)] bg-[var(--surface)] px-6 py-4">
-        <div className="flex items-center justify-between gap-4">
+      {/* ── Page Header ── */}
+      <div className="flex-shrink-0 px-6 pt-6 pb-4">
+        <div className="flex items-start justify-between gap-4">
           <div>
-            <h1
-              className="text-[22px] font-[800] tracking-tight text-[var(--text-primary)]"
-              style={{ fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif' }}
-            >
+            <h1 className="text-[24px] font-[800] tracking-tight"
+              style={{ fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif', color: '#1A1512' }}>
               Cases
             </h1>
-            <p className="mt-0.5 text-[12.5px] text-[var(--text-tertiary)]">
-              {isLoading ? 'Loading…' : `${totalCases} cases${fy ? ` · FY ${fy}` : ''}`}
+            <p className="mt-0.5 text-[13px]" style={{ color: '#6B6258' }}>
+              {isLoading ? 'Loading…' : `${totalCases} cases${fy ? ` · FY ${fy}` : ''} — drag cards to update status`}
             </p>
           </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="primary"
-              size="sm"
-              leftIcon={<Plus className="h-3.5 w-3.5" />}
-              onClick={() => setShowCreate(true)}
-            >
-              New Case
-            </Button>
-          </div>
+          <button
+            onClick={() => setShowCreate(true)}
+            className="flex h-9 items-center gap-2 rounded-xl px-4 text-[13px] font-[700] text-white transition-all duration-150 active:scale-95"
+            style={{
+              background: 'linear-gradient(135deg, #C84B0F 0%, #F97316 100%)',
+              boxShadow: '0 4px 14px rgba(200,75,15,0.30)',
+              fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif',
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.boxShadow = '0 6px 20px rgba(200,75,15,0.42)'; e.currentTarget.style.transform = 'translateY(-1px)' }}
+            onMouseLeave={(e) => { e.currentTarget.style.boxShadow = '0 4px 14px rgba(200,75,15,0.30)'; e.currentTarget.style.transform = 'translateY(0)' }}
+          >
+            <Plus className="h-4 w-4" strokeWidth={2.5} /> New Case
+          </button>
         </div>
 
         {/* Toolbar */}
-        <div className="mt-3 flex items-center gap-3">
-          {/* Search */}
+        <div className="mt-4 flex items-center gap-3">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[var(--text-tertiary)]" />
+            <Search className="pointer-events-none absolute left-3.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2" style={{ color: '#A09890' }} />
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search cases or clients…"
-              className="h-8 w-56 rounded-lg border border-[var(--border)] bg-[var(--surface)] pl-9 pr-3 text-[13px] text-[var(--text-primary)] outline-none transition-all placeholder:text-[var(--text-tertiary)] focus:border-brand-400 focus:shadow-[0_0_0_3px_rgba(18,110,71,0.1)] hover:border-[var(--border-strong)]"
+              className="h-9 w-60 rounded-xl border pl-10 pr-3 text-[13px] outline-none transition-all duration-150"
+              style={{ borderColor: '#EDE8E1', color: '#1A1512', background: 'white' }}
+              onFocus={(e) => { e.target.style.borderColor = '#C84B0F'; e.target.style.boxShadow = '0 0 0 3px rgba(200,75,15,0.12)' }}
+              onBlur={(e) => { e.target.style.borderColor = '#EDE8E1'; e.target.style.boxShadow = 'none' }}
             />
           </div>
 
-          {/* FY filter */}
           <div className="w-36">
-            <Select
-              options={getFYOptions()}
-              value={fy}
-              onChange={setFy}
-            />
+            <Select options={getFYOptions()} value={fy} onChange={setFy} />
           </div>
 
-          {/* Column summary pills */}
           {!isLoading && filteredBoard && (
-            <div className="flex items-center gap-2 ml-2">
+            <div className="ml-2 flex items-center gap-3">
               {COLUMNS.map((col) => {
                 const count = filteredBoard[col.id]?.length ?? 0
                 if (count === 0) return null
                 return (
-                  <span key={col.id} className="flex items-center gap-1.5 text-[11.5px] text-[var(--text-tertiary)]">
-                    <span className={cn('h-1.5 w-1.5 rounded-full', col.dot)} />
+                  <span key={col.id} className="flex items-center gap-1.5 text-[12px] font-[500]" style={{ color: '#6B6258' }}>
+                    <span className={cn('h-2 w-2 rounded-full', col.dot)} />
                     {count}
                   </span>
                 )
@@ -367,11 +354,11 @@ export default function CasesPage() {
       </div>
 
       {/* ── Kanban Board ── */}
-      <div className="flex-1 overflow-x-auto overflow-y-auto p-6">
+      <div className="flex-1 overflow-x-auto overflow-y-auto px-6 pb-6">
         {isLoading ? (
           <div className="flex gap-4">
             {COLUMNS.map((col) => (
-              <div key={col.id} className="w-[272px] flex-shrink-0">
+              <div key={col.id} className="w-[220px] flex-shrink-0 xl:w-[240px]">
                 <div className={cn('mb-2 h-10 animate-pulse rounded-xl border', col.color, col.border)} />
                 <div className="flex flex-col gap-2">
                   {Array.from({ length: 3 }).map((_, i) => (
@@ -382,7 +369,7 @@ export default function CasesPage() {
             ))}
           </div>
         ) : (
-          <div className="flex gap-4 pb-4 min-h-full">
+          <div className="flex gap-3 pb-4 h-full" style={{ minHeight: 'fit-content' }}>
             {COLUMNS.map((col) => (
               <KanbanColumn
                 key={col.id}
@@ -391,7 +378,6 @@ export default function CasesPage() {
                 onDragStart={handleDragStart}
                 onDrop={handleDrop}
                 onCardClick={(id) => navigate(`/cases/${id}`)}
-                onAddCase={() => setShowCreate(true)}
               />
             ))}
           </div>
